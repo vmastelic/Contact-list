@@ -12,7 +12,7 @@
         public string Note { get; set; } = string.Empty;
         public ICollection<PhoneNumber> PhoneNumbers { get; set; }
             = new List<PhoneNumber>();
-        public ICollection<EmailAddress> Contacts { get; set; }
+        public ICollection<EmailAddress> EmailAddresses { get; set; }
             = new List<EmailAddress>();
         public ICollection<Tag> Tags { get; set; }
             = new List<Tag>();
