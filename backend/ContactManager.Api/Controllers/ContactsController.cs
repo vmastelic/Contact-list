@@ -1,4 +1,5 @@
-﻿using ContactManager.Api.Services;
+﻿using ContactManager.Api.DTOs;
+using ContactManager.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ContactManager.Api.Controllers
@@ -25,6 +26,17 @@ namespace ContactManager.Api.Controllers
         {
             var contact = await _contactService.GetByIdAsync(id);
             return Ok(contact);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateContactDto dto)
+        {
+            var contact = await _contactService.CreateAsync(dto);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = contact.Id },
+                contact
+                );
         }
     }
 }

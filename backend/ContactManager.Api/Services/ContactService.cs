@@ -1,6 +1,8 @@
 ﻿using ContactManager.Api.Data;
 using ContactManager.Api.DTOs;
+using ContactManager.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace ContactManager.Api.Services
 {
@@ -102,6 +104,58 @@ namespace ContactManager.Api.Services
                         .ToList()
                 })
                 .FirstOrDefaultAsync();
+        }
+        
+        public async Task<ContactDto> CreateAsync(CreateContactDto dto)
+        {
+            var tags = await _context.Tags
+                .Where(t => dto.TagIds.Contains(t.Id))
+                .ToListAsync();
+
+            var contact = new Contact
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Street = dto.Street,
+                City = dto.City,
+                PostalCode = dto.PostalCode,
+                Country = dto.Country,
+                Note = dto.Note,
+
+                PhoneNumbers = dto.PhoneNumbers
+                .Select(p => new PhoneNumber
+                {
+                    Type = p.Type,
+                    Value = p.Value
+                })
+                .ToList(),
+
+                EmailAddresses = dto.EmailAddresses
+                .Select(e => new EmailAddress
+                {
+                    Type = e.Type,
+                    Value = e.Value
+                })
+                .ToList(),
+
+                Tags = tags
+            };
+
+            _context.Contacts.Add(contact);
+
+            await _context.SaveChangesAsync();
+
+            return new ContactDto
+            {
+                Id = contact.Id,
+                FirstName = contact.FirstName,
+                LastName = contact.LastName,
+                Street = contact.Street,
+                City = contact.City,
+                PostalCode = contact.PostalCode,
+                Country = contact.Country,
+                Note = contact.Note
+            };
         }
     }
 }
