@@ -1,4 +1,4 @@
-﻿using ContactManager.Api.DTOs;
+﻿using ContactManager.Api.DTOs.ContactDTOs;
 
 namespace ContactManager.Api.Services
 {

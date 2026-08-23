@@ -1,4 +1,4 @@
-﻿namespace ContactManager.Api.DTOs
+﻿namespace ContactManager.Api.DTOs.TagDTOs
 {
     public class TagDto
     {

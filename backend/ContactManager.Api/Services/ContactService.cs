@@ -1,5 +1,7 @@
 ﻿using ContactManager.Api.Data;
 using ContactManager.Api.DTOs;
+using ContactManager.Api.DTOs.ContactDTOs;
+using ContactManager.Api.DTOs.TagDTOs;
 using ContactManager.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,9 +20,6 @@ namespace ContactManager.Api.Services
         {
             return await _context.Contacts
                 .AsNoTracking()
-                .Include(c => c.PhoneNumbers)
-                .Include(c => c.EmailAddresses)
-                .Include(c => c.Tags)
                 .Select(c => new ContactDto
                 {
                     Id = c.Id,
@@ -63,9 +62,6 @@ namespace ContactManager.Api.Services
         {
             return await _context.Contacts
                 .AsNoTracking()
-                .Include(c => c.PhoneNumbers)
-                .Include(c => c.EmailAddresses)
-                .Include(c => c.Tags)
                 .Where(c => c.Id == id)
                 .Select(c => new ContactDto
                 {

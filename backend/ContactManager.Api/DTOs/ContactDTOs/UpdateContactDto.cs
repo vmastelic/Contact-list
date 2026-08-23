@@ -1,9 +1,7 @@
-﻿namespace ContactManager.Api.DTOs
+﻿namespace ContactManager.Api.DTOs.ContactDTOs
 {
-    public class ContactDto
+    public class UpdateContactDto
     {
-        public int Id { get; set; }
-
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
 
@@ -16,6 +14,6 @@
 
         public List<PhoneNumberDto> PhoneNumbers { get; set; } = new();
         public List<EmailAddressDto> EmailAddresses { get; set; } = new();
-        public List<TagDto> Tags { get; set; } = new();
+        public List<int> TagIds { get; set; } = new();
     }
 }

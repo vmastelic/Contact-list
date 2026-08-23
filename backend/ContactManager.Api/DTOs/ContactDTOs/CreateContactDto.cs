@@ -1,6 +1,6 @@
-﻿namespace ContactManager.Api.DTOs
+﻿namespace ContactManager.Api.DTOs.ContactDTOs
 {
-    public class UpdateContactDto
+    public class CreateContactDto
     {
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
