@@ -2,7 +2,6 @@
 using ContactManager.Api.DTOs;
 using ContactManager.Api.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.JSInterop.Infrastructure;
 
 namespace ContactManager.Api.Services
 {
@@ -217,6 +216,23 @@ namespace ContactManager.Api.Services
             await _context.SaveChangesAsync();
 
             return await GetByIdAsync(contact.Id);
+        }
+
+        public async Task<bool>  DeleteAsync(int id)
+        {
+            var contact = await _context.Contacts
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (contact == null)
+            {
+                return false;
+            }
+
+            _context.Contacts.Remove(contact);
+            await _context.SaveChangesAsync();
+
+            return true;
+
         }
     }
 }
