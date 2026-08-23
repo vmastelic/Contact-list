@@ -21,7 +21,7 @@ namespace ContactManager.Api.Controllers
             return Ok(contacts);
         }
 
-        [HttpGet("id")]
+        [HttpGet(" {id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var contact = await _contactService.GetByIdAsync(id);
@@ -37,6 +37,19 @@ namespace ContactManager.Api.Controllers
                 new { id = contact.Id },
                 contact
                 );
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, UpdateContactDto dto)
+        {
+            var contact = await _contactService.UpdateAsync(id, dto);
+
+            if (contact == null)
+            {
+                return NotFound();
+            }
+            
+            return Ok(contact);
         }
     }
 }

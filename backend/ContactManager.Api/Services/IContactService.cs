@@ -7,5 +7,6 @@ namespace ContactManager.Api.Services
         Task<List<ContactDto>> GetAllAsync();
         Task<ContactDto> GetByIdAsync(int id);
         Task<ContactDto> CreateAsync(CreateContactDto dto);
+        Task<ContactDto> UpdateAsync(int id, UpdateContactDto dto);
     }
 }

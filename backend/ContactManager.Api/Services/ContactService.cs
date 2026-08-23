@@ -157,5 +157,66 @@ namespace ContactManager.Api.Services
                 Note = contact.Note
             };
         }
+
+        public async Task<ContactDto?> UpdateAsync(int id, UpdateContactDto dto)
+        {
+
+            var contact = await _context.Contacts
+                .Include(c => c.PhoneNumbers)
+                .Include(c => c.EmailAddresses)
+                .Include(c => c.Tags)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (contact == null)
+            {
+                return null;
+            }
+
+            contact.FirstName = dto.FirstName;
+            contact.LastName = dto.LastName;
+            contact.Street = dto.Street;
+            contact.City = dto.City;
+            contact.PostalCode = dto.PostalCode;
+            contact.Country = dto.Country;
+            contact.Note = dto.Note;
+
+            _context.PhoneNumbers.RemoveRange(contact.PhoneNumbers);
+            _context.EmailAddresses.RemoveRange(contact.EmailAddresses);
+
+            contact.PhoneNumbers.Clear();
+            contact.EmailAddresses.Clear();
+            contact.Tags.Clear();
+
+            foreach(var phone in dto.PhoneNumbers)
+            {
+                contact.PhoneNumbers.Add(new PhoneNumber
+                {
+                    Type = phone.Type,
+                    Value = phone.Value
+                });
+            }
+
+            foreach(var email in dto.EmailAddresses)
+            {
+                contact.EmailAddresses.Add(new EmailAddress
+                {
+                    Type = email.Type,
+                    Value = email.Value
+                });
+            }
+
+            var tags = await _context.Tags
+                .Where(t => dto.TagIds.Contains(t.Id))
+                .ToListAsync();
+
+            foreach (var tag in tags)
+            {
+                contact.Tags.Add(tag);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return await GetByIdAsync(contact.Id);
+        }
     }
 }
