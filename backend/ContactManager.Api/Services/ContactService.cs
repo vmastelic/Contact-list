@@ -273,9 +273,9 @@ namespace ContactManager.Api.Services
                 })
                 .ToListAsync();
         }
-        public async Task<List<ContactDto>> SearchAsync(string search)
+        public async Task<List<ContactDto>> SearchAsync(string search, int page, int pageSize, string sortBy, string sortDirection)
         {
-            return await _context.Contacts
+            var query = _context.Contacts
                 .AsNoTracking()
                 .Where(c =>
                     EF.Functions.ILike(c.FirstName, $"%{search}%") ||
@@ -286,7 +286,24 @@ namespace ContactManager.Api.Services
                         EF.Functions.ILike(e.Value, $"%{search}%")) ||
                     c.Tags.Any(t =>
                         EF.Functions.ILike(t.Name, $"%{search}%"))
-                )
+                );
+
+            if (sortBy == "firstName")
+            {
+                query = sortDirection == "desc"
+                    ? query.OrderByDescending(c => c.FirstName)
+                    : query.OrderBy(c => c.FirstName);
+            }
+            else
+            {
+                query = sortDirection == "desc"
+                    ? query.OrderByDescending(c => c.LastName)
+                    : query.OrderBy(c => c.LastName);
+            }
+
+            return await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(c => new ContactDto
                 {
                     Id = c.Id,

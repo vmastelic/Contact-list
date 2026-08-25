@@ -73,7 +73,7 @@ namespace ContactManager.Api.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string search)
+        public async Task<IActionResult> Search([FromQuery] string search, int page, int pageSize, string sortBy, string sortDirection)
         {
             var contacts = await _contactService.SearchAsync(search);
             return Ok(contacts);

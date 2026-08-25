@@ -11,6 +11,6 @@ namespace ContactManager.Api.Services
         Task<ContactDto> UpdateAsync(int id, UpdateContactDto dto);
         Task<bool> DeleteAsync(int id);
         Task<List<ContactDto>> FilterAsync(int tagId);
-        Task<List<ContactDto>> SearchAsync(string search);
+        Task<List<ContactDto>> SearchAsync(string search, int page, int pageSize, string sortBy, string sortDirection);
     }
 }
