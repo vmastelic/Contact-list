@@ -100,7 +100,7 @@ namespace ContactManager.Api.Services
                 })
                 .FirstOrDefaultAsync();
         }
-        
+
         public async Task<ContactDto> CreateAsync(CreateContactDto dto)
         {
             var tags = await _context.Tags
@@ -182,7 +182,7 @@ namespace ContactManager.Api.Services
             contact.EmailAddresses.Clear();
             contact.Tags.Clear();
 
-            foreach(var phone in dto.PhoneNumbers)
+            foreach (var phone in dto.PhoneNumbers)
             {
                 contact.PhoneNumbers.Add(new PhoneNumber
                 {
@@ -191,7 +191,7 @@ namespace ContactManager.Api.Services
                 });
             }
 
-            foreach(var email in dto.EmailAddresses)
+            foreach (var email in dto.EmailAddresses)
             {
                 contact.EmailAddresses.Add(new EmailAddress
                 {
@@ -214,7 +214,7 @@ namespace ContactManager.Api.Services
             return await GetByIdAsync(contact.Id);
         }
 
-        public async Task<bool>  DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var contact = await _context.Contacts
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -273,5 +273,57 @@ namespace ContactManager.Api.Services
                 })
                 .ToListAsync();
         }
+        public async Task<List<ContactDto>> SearchAsync(string search)
+        {
+            return await _context.Contacts
+                .AsNoTracking()
+                .Where(c =>
+                    EF.Functions.ILike(c.FirstName, $"%{search}%") ||
+                    EF.Functions.ILike(c.LastName, $"%{search}%") ||
+                    c.PhoneNumbers.Any(p =>
+                        EF.Functions.ILike(p.Value, $"%{search}%")) ||
+                    c.EmailAddresses.Any(e =>
+                        EF.Functions.ILike(e.Value, $"%{search}%")) ||
+                    c.Tags.Any(t =>
+                        EF.Functions.ILike(t.Name, $"%{search}%"))
+                )
+                .Select(c => new ContactDto
+                {
+                    Id = c.Id,
+                    FirstName = c.FirstName,
+                    LastName = c.LastName,
+                    Street = c.Street,
+                    City = c.City,
+                    PostalCode = c.PostalCode,
+                    Country = c.Country,
+                    Note = c.Note,
+
+                    PhoneNumbers = c.PhoneNumbers
+                        .Select(p => new PhoneNumberDto
+                        {
+                            Type = p.Type,
+                            Value = p.Value
+                        })
+                        .ToList(),
+
+                    EmailAddresses = c.EmailAddresses
+                        .Select(e => new EmailAddressDto
+                        {
+                            Type = e.Type,
+                            Value = e.Value
+                        })
+                        .ToList(),
+
+                    Tags = c.Tags
+                        .Select(t => new TagDto
+                        {
+                            Id = t.Id,
+                            Name = t.Name
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+        }
     }
+
 }

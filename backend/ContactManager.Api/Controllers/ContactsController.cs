@@ -71,5 +71,12 @@ namespace ContactManager.Api.Controllers
             var contacts = await _contactService.FilterAsync(tagId);
             return Ok(contacts);
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string search)
+        {
+            var contacts = await _contactService.SearchAsync(search);
+            return Ok(contacts);
+        }
     }
 }
