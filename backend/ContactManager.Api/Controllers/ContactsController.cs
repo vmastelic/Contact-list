@@ -64,5 +64,12 @@ namespace ContactManager.Api.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("filter")]
+        public async Task<IActionResult> FilterAsync(int tagId)
+        {
+            var contacts = await _contactService.FilterAsync(tagId);
+            return Ok(contacts);
+        }
     }
 }
