@@ -1,10 +1,38 @@
-<h1>Contacts</h1>
+<div class="container">
+  <h1>Contacts</h1>
 
-<p>Number of contacts: {{ contacts().length }}</p>
+  <p class="count">
+    Total contacts: {{ contacts().length }}
+  </p>
 
-@for (contact of contacts(); track contact.id) {
-  <div>
-    <h2>{{ contact.firstName }} {{ contact.lastName }}</h2>
-    <p>{{ contact.city }} - {{ contact.country }}</p>
+  <div class="contact-grid">
+    @for (contact of contacts(); track contact.id) {
+      <div class="contact-card">
+
+        <h2>
+          {{ contact.firstName }} {{ contact.lastName }}
+        </h2>
+
+        <p>
+          <strong>City:</strong>
+          {{ contact.city }}
+        </p>
+
+        <p>
+          <strong>Country:</strong>
+          {{ contact.country }}
+        </p>
+
+        <p>
+          <strong>Address:</strong>
+          {{ contact.street }}
+        </p>
+
+        <button (click)="deleteContact(contact.id)">
+          Delete
+        </button>
+
+      </div>
+    }
   </div>
-}
+</div>

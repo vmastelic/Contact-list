@@ -27,4 +27,17 @@ export class App implements OnInit {
       }
     });
   }
+
+  deleteContact(id: number): void {
+    this.contactService.deleteContact(id).subscribe({
+      next: () => {
+        console.log(`Contact with id ${id} deleted successfully.`);
+        this.contacts.set(this.contacts().filter(contact => contact.id !== id));
+      },
+      error: (error) => {
+        console.error(`Error deleting contact with id ${id}:`, error);
+      }
+    });
+  }
+
 }
