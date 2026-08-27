@@ -21,10 +21,14 @@ namespace ContactManager.Api.Controllers
             return Ok(contacts);
         }
 
-        [HttpGet(" {id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var contact = await _contactService.GetByIdAsync(id);
+            if (contact == null)
+            {
+                return NotFound();
+            }
             return Ok(contact);
         }
 
@@ -73,9 +77,20 @@ namespace ContactManager.Api.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string search, int page, int pageSize, string sortBy, string sortDirection)
+        public async Task<IActionResult> Search(
+            [FromQuery] string search,
+            [FromQuery] int page,
+            [FromQuery] int pageSize,
+            [FromQuery] string sortBy,
+            [FromQuery] string sortDirection)
         {
-            var contacts = await _contactService.SearchAsync(search);
+            var contacts = await _contactService.SearchAsync(
+                search,
+                page,
+                pageSize,
+                sortBy,
+                sortDirection);
+
             return Ok(contacts);
         }
     }
