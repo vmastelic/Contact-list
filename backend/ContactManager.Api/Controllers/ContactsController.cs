@@ -56,7 +56,7 @@ namespace ContactManager.Api.Controllers
             return Ok(contact);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _contactService.DeleteAsync(id);
