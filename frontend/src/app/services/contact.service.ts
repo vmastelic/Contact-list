@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpParams
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import {
   Contact,
   CreateContactRequest,
-  UpdateContactRequest
+  UpdateContactRequest,
+  PagedResult
 } from '../models/contact';
 
 @Injectable({
@@ -13,12 +17,16 @@ import {
 })
 export class ContactService {
 
-  private apiUrl = 'https://localhost:7090/api/Contacts';
+  private apiUrl =
+    'https://localhost:7090/api/Contacts';
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient
+  ) {
   }
 
   getContacts(): Observable<Contact[]> {
+
     return this.http.get<Contact[]>(
       this.apiUrl
     );
@@ -56,22 +64,54 @@ export class ContactService {
 
   searchContacts(
     search: string,
-    page: number = 1,
-    pageSize: number = 10,
-    sortBy: string = 'lastName',
-    sortDirection: string = 'asc'
-  ): Observable<Contact[]> {
+    page: number,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+    tagId: number | null
+  ): Observable<PagedResult<Contact>> {
 
-    return this.http.get<Contact[]>(
+    let params =
+      new HttpParams()
+        .set(
+          'page',
+          page.toString()
+        )
+        .set(
+          'pageSize',
+          pageSize.toString()
+        )
+        .set(
+          'sortBy',
+          sortBy
+        )
+        .set(
+          'sortDirection',
+          sortDirection
+        );
+
+    if (search.trim()) {
+
+      params = params.set(
+        'search',
+        search.trim()
+      );
+    }
+
+    if (tagId !== null) {
+
+      params = params.set(
+        'tagId',
+        tagId.toString()
+      );
+    }
+
+    return this.http.get<
+      PagedResult<Contact>
+    >(
       `${this.apiUrl}/search`,
       {
-        params: {
-          search,
-          page,
-          pageSize,
-          sortBy,
-          sortDirection
-        }
+        params
       }
     );
   }

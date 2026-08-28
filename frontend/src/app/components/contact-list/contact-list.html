@@ -9,14 +9,11 @@
       </h1>
 
       <p class="count">
-
         Total contacts:
-        {{ contacts().length }}
-
+        {{ totalCount() }}
       </p>
 
     </div>
-
 
     <button
       class="primary-button"
@@ -30,10 +27,7 @@
   </div>
 
 
-  <!-- SEARCH + FILTER -->
-
   <div class="toolbar">
-
 
     <div class="search-bar">
 
@@ -41,8 +35,8 @@
         type="text"
         placeholder="Search contacts..."
         [value]="searchText()"
-        (input)="onSearchInput($event)">
-
+        (input)="onSearchInput($event)"
+        (keyup.enter)="searchContacts()">
 
       <button
         type="button"
@@ -51,6 +45,18 @@
         Search
 
       </button>
+
+      @if (searchText()) {
+
+        <button
+          type="button"
+          (click)="clearSearch()">
+
+          Clear
+
+        </button>
+
+      }
 
     </div>
 
@@ -61,16 +67,13 @@
         Filter by tag:
       </label>
 
-
       <select
         [value]="selectedTagId() ?? ''"
         (change)="onTagFilterChange($event)">
 
-
         <option value="">
           All tags
         </option>
-
 
         @for (
           tag of tags();
@@ -93,22 +96,100 @@
   </div>
 
 
-  <!-- CONTACT LIST -->
+  <div class="sorting-bar">
 
-  @if (
+    <div class="sorting-control">
+
+      <label>
+        Sort by:
+      </label>
+
+      <select
+        [value]="sortBy()"
+        (change)="onSortByChange($event)">
+
+        <option value="firstName">
+          First name
+        </option>
+
+        <option value="lastName">
+          Last name
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="sorting-control">
+
+      <label>
+        Direction:
+      </label>
+
+      <select
+        [value]="sortDirection()"
+        (change)="onSortDirectionChange($event)">
+
+        <option value="asc">
+          Ascending
+        </option>
+
+        <option value="desc">
+          Descending
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="sorting-control">
+
+      <label>
+        Per page:
+      </label>
+
+      <select
+        [value]="pageSize()"
+        (change)="onPageSizeChange($event)">
+
+        <option value="5">
+          5
+        </option>
+
+        <option value="10">
+          10
+        </option>
+
+        <option value="20">
+          20
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+  @if (loading()) {
+
+    <div class="empty-state">
+      Loading contacts...
+    </div>
+
+  } @else if (
     contacts().length === 0
   ) {
 
     <div class="empty-state">
-
       No contacts found.
-
     </div>
 
   } @else {
 
     <div class="contact-grid">
-
 
       @for (
         contact of contacts();
@@ -117,91 +198,55 @@
 
         <div class="contact-card">
 
-
           <h2>
-
             {{ contact.firstName }}
             {{ contact.lastName }}
-
           </h2>
-
 
           @if (contact.street) {
 
             <p>
-
-              <strong>
-                Address:
-              </strong>
-
+              <strong>Address:</strong>
               {{ contact.street }}
-
             </p>
 
           }
-
 
           @if (contact.city) {
 
             <p>
-
-              <strong>
-                City:
-              </strong>
-
+              <strong>City:</strong>
               {{ contact.city }}
-
             </p>
 
           }
-
 
           @if (contact.postalCode) {
 
             <p>
-
-              <strong>
-                Postal code:
-              </strong>
-
+              <strong>Postal code:</strong>
               {{ contact.postalCode }}
-
             </p>
 
           }
-
 
           @if (contact.country) {
 
             <p>
-
-              <strong>
-                Country:
-              </strong>
-
+              <strong>Country:</strong>
               {{ contact.country }}
-
             </p>
 
           }
-
 
           @if (contact.note) {
 
             <p>
-
-              <strong>
-                Note:
-              </strong>
-
+              <strong>Note:</strong>
               {{ contact.note }}
-
             </p>
 
           }
-
-
-          <!-- PHONE NUMBERS -->
 
           @if (
             contact.phoneNumbers.length > 0
@@ -212,7 +257,6 @@
               <h3>
                 Phone numbers
               </h3>
-
 
               @for (
                 phone of contact.phoneNumbers;
@@ -235,9 +279,6 @@
 
           }
 
-
-          <!-- EMAILS -->
-
           @if (
             contact.emailAddresses.length > 0
           ) {
@@ -247,7 +288,6 @@
               <h3>
                 Email addresses
               </h3>
-
 
               @for (
                 email of contact.emailAddresses;
@@ -270,9 +310,6 @@
 
           }
 
-
-          <!-- TAGS -->
-
           @if (
             contact.tags.length > 0
           ) {
@@ -283,7 +320,6 @@
                 Tags
               </h3>
 
-
               <div class="tags">
 
                 @for (
@@ -292,9 +328,7 @@
                 ) {
 
                   <span class="tag">
-
                     {{ tag.name }}
-
                   </span>
 
                 }
@@ -304,9 +338,6 @@
             </div>
 
           }
-
-
-          <!-- ACTIONS -->
 
           <div class="card-actions">
 
@@ -318,7 +349,6 @@
               Edit
 
             </button>
-
 
             <button
               class="delete-button"
@@ -340,22 +370,45 @@
   }
 
 
-  <!-- ADD / EDIT FORM -->
+  @if (totalPages() > 0) {
+
+    <div class="pagination">
+
+      <button
+        type="button"
+        [disabled]="page() <= 1"
+        (click)="previousPage()">
+
+        Previous
+
+      </button>
+
+      <span>
+        Page {{ page() }} of {{ totalPages() }}
+      </span>
+
+      <button
+        type="button"
+        [disabled]="page() >= totalPages()"
+        (click)="nextPage()">
+
+        Next
+
+      </button>
+
+    </div>
+
+  }
+
 
   @if (showForm()) {
 
     <app-contact-form
-
       [contact]="selectedContact()"
-
       [availableTags]="tags()"
-
       (tagCreated)="onTagCreated($event)"
-
       (saved)="onContactSaved($event)"
-
       (cancelled)="closeForm()">
-
     </app-contact-form>
 
   }

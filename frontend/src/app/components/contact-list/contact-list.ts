@@ -22,7 +22,6 @@ import {
   ContactFormComponent
 } from '../contact-form/contact-form';
 
-
 @Component({
   selector: 'app-contact-list',
   standalone: true,
@@ -43,30 +42,44 @@ export class ContactListComponent
   private tagService =
     inject(TagService);
 
-
   contacts =
     signal<Contact[]>([]);
-
 
   tags =
     signal<Tag[]>([]);
 
-
   searchText =
     signal('');
-
 
   selectedTagId =
     signal<number | null>(null);
 
+  page =
+    signal(1);
+
+  pageSize =
+    signal(5);
+
+  totalCount =
+    signal(0);
+
+  totalPages =
+    signal(0);
+
+  sortBy =
+    signal('lastName');
+
+  sortDirection =
+    signal('asc');
 
   showForm =
     signal(false);
 
-
   selectedContact =
     signal<Contact | null>(null);
 
+  loading =
+    signal(false);
 
   ngOnInit(): void {
 
@@ -75,22 +88,41 @@ export class ContactListComponent
     this.loadTags();
   }
 
-
-  // -------------------------
-  // LOAD CONTACTS
-  // -------------------------
-
   loadContacts(): void {
 
+    this.loading.set(true);
+
     this.contactService
-      .getContacts()
+      .searchContacts(
+        this.searchText(),
+        this.page(),
+        this.pageSize(),
+        this.sortBy(),
+        this.sortDirection(),
+        this.selectedTagId()
+      )
       .subscribe({
 
-        next: (data) => {
+        next: (result) => {
 
-          this.contacts.set(data);
+          this.contacts.set(
+            result.items
+          );
+
+          this.totalCount.set(
+            result.totalCount
+          );
+
+          this.totalPages.set(
+            result.totalPages
+          );
+
+          this.page.set(
+            result.page
+          );
+
+          this.loading.set(false);
         },
-
 
         error: (error) => {
 
@@ -98,14 +130,11 @@ export class ContactListComponent
             'Error loading contacts:',
             error
           );
+
+          this.loading.set(false);
         }
       });
   }
-
-
-  // -------------------------
-  // LOAD TAGS
-  // -------------------------
 
   loadTags(): void {
 
@@ -115,14 +144,8 @@ export class ContactListComponent
 
         next: (data) => {
 
-          console.log(
-            'TAGS FROM BACKEND:',
-            data
-          );
-
           this.tags.set(data);
         },
-
 
         error: (error) => {
 
@@ -134,11 +157,6 @@ export class ContactListComponent
       });
   }
 
-
-  // -------------------------
-  // SEARCH
-  // -------------------------
-
   onSearchInput(
     event: Event
   ): void {
@@ -146,54 +164,26 @@ export class ContactListComponent
     const input =
       event.target as HTMLInputElement;
 
-
     this.searchText.set(
       input.value
     );
   }
 
-
   searchContacts(): void {
 
-    const search =
-      this.searchText().trim();
+    this.page.set(1);
 
-
-    if (!search) {
-
-      this.loadContacts();
-
-      return;
-    }
-
-
-    this.selectedTagId.set(null);
-
-
-    this.contactService
-      .searchContacts(search)
-      .subscribe({
-
-        next: (data) => {
-
-          this.contacts.set(data);
-        },
-
-
-        error: (error) => {
-
-          console.error(
-            'Error searching contacts:',
-            error
-          );
-        }
-      });
+    this.loadContacts();
   }
 
+  clearSearch(): void {
 
-  // -------------------------
-  // TAG FILTER
-  // -------------------------
+    this.searchText.set('');
+
+    this.page.set(1);
+
+    this.loadContacts();
+  }
 
   onTagFilterChange(
     event: Event
@@ -202,63 +192,100 @@ export class ContactListComponent
     const select =
       event.target as HTMLSelectElement;
 
-
     if (!select.value) {
 
-      this.selectedTagId.set(null);
+      this.selectedTagId.set(
+        null
+      );
 
-      this.loadContacts();
+    } else {
 
+      this.selectedTagId.set(
+        Number(select.value)
+      );
+    }
+
+    this.page.set(1);
+
+    this.loadContacts();
+  }
+
+  onSortByChange(
+    event: Event
+  ): void {
+
+    const select =
+      event.target as HTMLSelectElement;
+
+    this.sortBy.set(
+      select.value
+    );
+
+    this.page.set(1);
+
+    this.loadContacts();
+  }
+
+  onSortDirectionChange(
+    event: Event
+  ): void {
+
+    const select =
+      event.target as HTMLSelectElement;
+
+    this.sortDirection.set(
+      select.value
+    );
+
+    this.page.set(1);
+
+    this.loadContacts();
+  }
+
+  onPageSizeChange(
+    event: Event
+  ): void {
+
+    const select =
+      event.target as HTMLSelectElement;
+
+    this.pageSize.set(
+      Number(select.value)
+    );
+
+    this.page.set(1);
+
+    this.loadContacts();
+  }
+
+  previousPage(): void {
+
+    if (this.page() <= 1) {
       return;
     }
 
-
-    const tagId =
-      Number(select.value);
-
-
-    this.selectedTagId.set(
-      tagId
+    this.page.update(
+      current => current - 1
     );
 
+    this.loadContacts();
+  }
 
-    this.searchText.set('');
+  nextPage(): void {
 
+    if (
+      this.page() >=
+      this.totalPages()
+    ) {
+      return;
+    }
 
-    this.filterByTag(
-      tagId
+    this.page.update(
+      current => current + 1
     );
+
+    this.loadContacts();
   }
-
-
-  filterByTag(
-    tagId: number
-  ): void {
-
-    this.contactService
-      .filterContacts(tagId)
-      .subscribe({
-
-        next: (data) => {
-
-          this.contacts.set(data);
-        },
-
-
-        error: (error) => {
-
-          console.error(
-            'Error filtering contacts:',
-            error
-          );
-        }
-      });
-  }
-
-
-  // -------------------------
-  // FORM
-  // -------------------------
 
   openAddForm(): void {
 
@@ -270,7 +297,6 @@ export class ContactListComponent
       true
     );
   }
-
 
   openEditForm(
     contact: Contact
@@ -285,7 +311,6 @@ export class ContactListComponent
     );
   }
 
-
   closeForm(): void {
 
     this.showForm.set(
@@ -297,11 +322,6 @@ export class ContactListComponent
     );
   }
 
-
-  // -------------------------
-  // NEW TAG CREATED
-  // -------------------------
-
   onTagCreated(
     tag: Tag
   ): void {
@@ -309,18 +329,15 @@ export class ContactListComponent
     this.tags.update(
       currentTags => {
 
-        const alreadyExists =
+        const exists =
           currentTags.some(
-            existingTag =>
-              existingTag.id === tag.id
+            current =>
+              current.id === tag.id
           );
 
-
-        if (alreadyExists) {
-
+        if (exists) {
           return currentTags;
         }
-
 
         return [
           ...currentTags,
@@ -335,11 +352,6 @@ export class ContactListComponent
     );
   }
 
-
-  // -------------------------
-  // CONTACT SAVED
-  // -------------------------
-
   onContactSaved(
     contact: Contact
   ): void {
@@ -349,28 +361,12 @@ export class ContactListComponent
       contact
     );
 
-
     this.closeForm();
-
-
-    this.searchText.set(
-      ''
-    );
-
-    this.selectedTagId.set(
-      null
-    );
-
 
     this.loadContacts();
 
     this.loadTags();
   }
-
-
-  // -------------------------
-  // DELETE CONTACT
-  // -------------------------
 
   deleteContact(
     id: number
@@ -381,11 +377,12 @@ export class ContactListComponent
         'Are you sure you want to delete this contact?'
       );
 
-
     if (!confirmed) {
       return;
     }
 
+    const onlyContactOnPage =
+      this.contacts().length === 1;
 
     this.contactService
       .deleteContact(id)
@@ -393,15 +390,18 @@ export class ContactListComponent
 
         next: () => {
 
-          this.contacts.update(
-            contacts =>
-              contacts.filter(
-                contact =>
-                  contact.id !== id
-              )
-          );
-        },
+          if (
+            onlyContactOnPage &&
+            this.page() > 1
+          ) {
 
+            this.page.update(
+              current => current - 1
+            );
+          }
+
+          this.loadContacts();
+        },
 
         error: (error) => {
 
