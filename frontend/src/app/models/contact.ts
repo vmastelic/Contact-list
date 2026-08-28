@@ -15,15 +15,52 @@ export interface Tag {
 
 export interface Contact {
   id: number;
+
   firstName: string;
   lastName: string;
+
   street: string;
   city: string;
   postalCode: string;
   country: string;
+
   note: string;
 
   phoneNumbers: PhoneNumber[];
   emailAddresses: EmailAddress[];
   tags: Tag[];
+}
+
+export interface CreateContactRequest {
+  firstName: string;
+  lastName: string;
+
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+
+  note: string;
+
+  phoneNumbers: PhoneNumber[];
+  emailAddresses: EmailAddress[];
+
+  tagIds: number[];
+}
+
+export interface UpdateContactRequest {
+  firstName: string;
+  lastName: string;
+
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+
+  note: string;
+
+  phoneNumbers: PhoneNumber[];
+  emailAddresses: EmailAddress[];
+
+  tagIds: number[];
 }
