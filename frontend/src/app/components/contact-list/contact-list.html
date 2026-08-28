@@ -9,8 +9,10 @@
       </h1>
 
       <p class="count">
+
         Total contacts:
         {{ contacts().length }}
+
       </p>
 
     </div>
@@ -91,9 +93,11 @@
   </div>
 
 
-  <!-- CONTACTS -->
+  <!-- CONTACT LIST -->
 
-  @if (contacts().length === 0) {
+  @if (
+    contacts().length === 0
+  ) {
 
     <div class="empty-state">
 
@@ -115,16 +119,23 @@
 
 
           <h2>
+
             {{ contact.firstName }}
             {{ contact.lastName }}
+
           </h2>
 
 
           @if (contact.street) {
 
             <p>
-              <strong>Address:</strong>
+
+              <strong>
+                Address:
+              </strong>
+
               {{ contact.street }}
+
             </p>
 
           }
@@ -133,8 +144,13 @@
           @if (contact.city) {
 
             <p>
-              <strong>City:</strong>
+
+              <strong>
+                City:
+              </strong>
+
               {{ contact.city }}
+
             </p>
 
           }
@@ -143,8 +159,13 @@
           @if (contact.postalCode) {
 
             <p>
-              <strong>Postal code:</strong>
+
+              <strong>
+                Postal code:
+              </strong>
+
               {{ contact.postalCode }}
+
             </p>
 
           }
@@ -153,8 +174,13 @@
           @if (contact.country) {
 
             <p>
-              <strong>Country:</strong>
+
+              <strong>
+                Country:
+              </strong>
+
               {{ contact.country }}
+
             </p>
 
           }
@@ -163,12 +189,19 @@
           @if (contact.note) {
 
             <p>
-              <strong>Note:</strong>
+
+              <strong>
+                Note:
+              </strong>
+
               {{ contact.note }}
+
             </p>
 
           }
 
+
+          <!-- PHONE NUMBERS -->
 
           @if (
             contact.phoneNumbers.length > 0
@@ -203,6 +236,8 @@
           }
 
 
+          <!-- EMAILS -->
+
           @if (
             contact.emailAddresses.length > 0
           ) {
@@ -235,6 +270,8 @@
 
           }
 
+
+          <!-- TAGS -->
 
           @if (
             contact.tags.length > 0
@@ -269,6 +306,8 @@
           }
 
 
+          <!-- ACTIONS -->
+
           <div class="card-actions">
 
             <button
@@ -301,13 +340,17 @@
   }
 
 
-  <!-- CONTACT FORM -->
+  <!-- ADD / EDIT FORM -->
 
   @if (showForm()) {
 
     <app-contact-form
 
       [contact]="selectedContact()"
+
+      [availableTags]="tags()"
+
+      (tagCreated)="onTagCreated($event)"
 
       (saved)="onContactSaved($event)"
 

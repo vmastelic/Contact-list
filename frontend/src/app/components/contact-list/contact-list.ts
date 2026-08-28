@@ -76,6 +76,10 @@ export class ContactListComponent
   }
 
 
+  // -------------------------
+  // LOAD CONTACTS
+  // -------------------------
+
   loadContacts(): void {
 
     this.contactService
@@ -99,6 +103,10 @@ export class ContactListComponent
   }
 
 
+  // -------------------------
+  // LOAD TAGS
+  // -------------------------
+
   loadTags(): void {
 
     this.tagService
@@ -106,6 +114,11 @@ export class ContactListComponent
       .subscribe({
 
         next: (data) => {
+
+          console.log(
+            'TAGS FROM BACKEND:',
+            data
+          );
 
           this.tags.set(data);
         },
@@ -121,6 +134,10 @@ export class ContactListComponent
       });
   }
 
+
+  // -------------------------
+  // SEARCH
+  // -------------------------
 
   onSearchInput(
     event: Event
@@ -173,6 +190,10 @@ export class ContactListComponent
       });
   }
 
+
+  // -------------------------
+  // TAG FILTER
+  // -------------------------
 
   onTagFilterChange(
     event: Event
@@ -235,11 +256,19 @@ export class ContactListComponent
   }
 
 
+  // -------------------------
+  // FORM
+  // -------------------------
+
   openAddForm(): void {
 
-    this.selectedContact.set(null);
+    this.selectedContact.set(
+      null
+    );
 
-    this.showForm.set(true);
+    this.showForm.set(
+      true
+    );
   }
 
 
@@ -251,17 +280,65 @@ export class ContactListComponent
       contact
     );
 
-    this.showForm.set(true);
+    this.showForm.set(
+      true
+    );
   }
 
 
   closeForm(): void {
 
-    this.showForm.set(false);
+    this.showForm.set(
+      false
+    );
 
-    this.selectedContact.set(null);
+    this.selectedContact.set(
+      null
+    );
   }
 
+
+  // -------------------------
+  // NEW TAG CREATED
+  // -------------------------
+
+  onTagCreated(
+    tag: Tag
+  ): void {
+
+    this.tags.update(
+      currentTags => {
+
+        const alreadyExists =
+          currentTags.some(
+            existingTag =>
+              existingTag.id === tag.id
+          );
+
+
+        if (alreadyExists) {
+
+          return currentTags;
+        }
+
+
+        return [
+          ...currentTags,
+          tag
+        ].sort(
+          (a, b) =>
+            a.name.localeCompare(
+              b.name
+            )
+        );
+      }
+    );
+  }
+
+
+  // -------------------------
+  // CONTACT SAVED
+  // -------------------------
 
   onContactSaved(
     contact: Contact
@@ -276,14 +353,24 @@ export class ContactListComponent
     this.closeForm();
 
 
-    this.searchText.set('');
+    this.searchText.set(
+      ''
+    );
 
-    this.selectedTagId.set(null);
+    this.selectedTagId.set(
+      null
+    );
 
 
     this.loadContacts();
+
+    this.loadTags();
   }
 
+
+  // -------------------------
+  // DELETE CONTACT
+  // -------------------------
 
   deleteContact(
     id: number

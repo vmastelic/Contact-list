@@ -17,10 +17,34 @@ export class TagService {
   ) {
   }
 
+
   getTags(): Observable<Tag[]> {
 
     return this.http.get<Tag[]>(
       this.apiUrl
+    );
+  }
+
+
+  createTag(
+    name: string
+  ): Observable<Tag> {
+
+    return this.http.post<Tag>(
+      this.apiUrl,
+      {
+        name
+      }
+    );
+  }
+
+
+  deleteTag(
+    id: number
+  ): Observable<void> {
+
+    return this.http.delete<void>(
+      `${this.apiUrl}/${id}`
     );
   }
 }

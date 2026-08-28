@@ -2,6 +2,9 @@
   box-sizing: border-box;
 }
 
+
+/* OVERLAY */
+
 .form-overlay {
   position: fixed;
 
@@ -25,6 +28,9 @@
   z-index: 1000;
 }
 
+
+/* FORM CONTAINER */
+
 .contact-form-container {
   background: white;
 
@@ -36,25 +42,35 @@
   padding: 30px;
 
   box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.2);
+    0 8px 30px
+    rgba(0, 0, 0, 0.2);
 }
+
 
 .contact-form-container h2 {
   margin-top: 0;
+
   margin-bottom: 25px;
 }
 
+
+/* FORM */
+
 form {
   display: flex;
+
   flex-direction: column;
 }
+
 
 label {
   font-weight: 600;
 
   margin-top: 13px;
+
   margin-bottom: 5px;
 }
+
 
 input,
 textarea {
@@ -71,21 +87,29 @@ textarea {
   background: white;
 }
 
+
 textarea {
   min-height: 90px;
+
   resize: vertical;
 }
+
 
 input:focus,
 textarea:focus {
   outline: none;
+
   border-color: #555;
 }
+
+
+/* VALIDATION */
 
 input.ng-invalid.ng-touched,
 textarea.ng-invalid.ng-touched {
   border-color: #c62828;
 }
+
 
 .error {
   display: block;
@@ -96,6 +120,7 @@ textarea.ng-invalid.ng-touched {
 
   margin-top: 4px;
 }
+
 
 .server-error {
   background: #ffe2e2;
@@ -109,6 +134,9 @@ textarea.ng-invalid.ng-touched {
   margin-bottom: 15px;
 }
 
+
+/* SECTIONS */
+
 .form-section {
   margin-top: 25px;
 
@@ -116,6 +144,7 @@ textarea.ng-invalid.ng-touched {
 
   border-top: 1px solid #ddd;
 }
+
 
 .section-header {
   display: flex;
@@ -129,9 +158,102 @@ textarea.ng-invalid.ng-touched {
   margin-bottom: 12px;
 }
 
+
 .section-header h3 {
   margin: 0;
 }
+
+
+/* TAGS */
+
+.tag-selection {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+
+.tag-option {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin: 0;
+
+  padding: 8px 12px;
+
+  background: #f1f1f1;
+
+  border: 1px solid #ddd;
+
+  border-radius: 20px;
+
+  cursor: pointer;
+
+  font-size: 14px;
+
+  font-weight: normal;
+}
+
+
+.tag-option:hover {
+  background: #e7e7e7;
+}
+
+
+.tag-option input {
+  width: auto;
+
+  margin: 0;
+
+  cursor: pointer;
+}
+
+
+.tag-option:has(input:checked) {
+  background: #222;
+
+  color: white;
+
+  border-color: #222;
+}
+
+
+.no-tags {
+  color: #777;
+
+  font-size: 14px;
+}
+
+
+/* CREATE NEW TAG */
+
+.new-tag {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 18px;
+}
+
+
+.new-tag input {
+  flex: 1;
+}
+
+
+.new-tag button {
+  white-space: nowrap;
+}
+
+
+/* PHONE / EMAIL */
 
 .dynamic-row {
   display: grid;
@@ -146,19 +268,13 @@ textarea.ng-invalid.ng-touched {
   margin-bottom: 10px;
 }
 
+
 .dynamic-field {
   width: 100%;
 }
 
-.form-actions {
-  display: flex;
 
-  justify-content: flex-end;
-
-  gap: 10px;
-
-  margin-top: 30px;
-}
+/* BUTTONS */
 
 button {
   border: none;
@@ -172,29 +288,54 @@ button {
   font-size: 14px;
 }
 
+
 button:hover {
   opacity: 0.9;
 }
 
+
 .primary-button {
   background: #222;
+
   color: white;
 }
 
+
 .cancel-button {
   background: #e5e5e5;
+
   color: #222;
 }
+
 
 .small-button {
   background: #e9e9e9;
+
   color: #222;
 }
 
+
 .remove-button {
   background: #ffe2e2;
+
   color: #8a1111;
 }
+
+
+/* FORM ACTIONS */
+
+.form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 30px;
+}
+
+
+/* MOBILE */
 
 @media (max-width: 650px) {
 
@@ -202,16 +343,37 @@ button:hover {
     grid-template-columns: 1fr;
   }
 
+
   .section-header {
     flex-direction: column;
+
     align-items: stretch;
   }
+
 
   .form-actions {
     flex-direction: column;
   }
 
+
   .contact-form-container {
     padding: 20px;
+  }
+
+
+  .tag-selection {
+    flex-direction: column;
+  }
+
+
+  .tag-option {
+    border-radius: 6px;
+  }
+
+
+  .new-tag {
+    flex-direction: column;
+
+    align-items: stretch;
   }
 }

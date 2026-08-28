@@ -9,11 +9,15 @@
 
       @if (isEditing) {
 
-        <h2>Edit Contact</h2>
+        <h2>
+          Edit Contact
+        </h2>
 
       } @else {
 
-        <h2>Add Contact</h2>
+        <h2>
+          Add Contact
+        </h2>
 
       }
 
@@ -26,6 +30,8 @@
 
       }
 
+
+      <!-- FIRST NAME -->
 
       <label>
         First name *
@@ -49,6 +55,8 @@
       }
 
 
+      <!-- LAST NAME -->
+
       <label>
         Last name *
       </label>
@@ -71,6 +79,8 @@
       }
 
 
+      <!-- STREET -->
+
       <label>
         Street
       </label>
@@ -80,6 +90,8 @@
         formControlName="street"
         placeholder="Street">
 
+
+      <!-- CITY -->
 
       <label>
         City
@@ -91,6 +103,8 @@
         placeholder="City">
 
 
+      <!-- POSTAL CODE -->
+
       <label>
         Postal code
       </label>
@@ -100,6 +114,8 @@
         formControlName="postalCode"
         placeholder="Postal code">
 
+
+      <!-- COUNTRY -->
 
       <label>
         Country
@@ -111,6 +127,8 @@
         placeholder="Country">
 
 
+      <!-- NOTE -->
+
       <label>
         Note
       </label>
@@ -119,6 +137,81 @@
         formControlName="note"
         placeholder="Note">
       </textarea>
+
+
+      <!-- TAGS -->
+
+      <div class="form-section">
+
+        <div class="section-header">
+
+          <h3>
+            Tags
+          </h3>
+
+        </div>
+
+
+        @if (
+          availableTags.length === 0
+        ) {
+
+          <p class="no-tags">
+            No tags available.
+          </p>
+
+        } @else {
+
+          <div class="tag-selection">
+
+            @for (
+              tag of availableTags;
+              track tag.id
+            ) {
+
+              <label class="tag-option">
+
+                <input
+                  type="checkbox"
+                  [checked]="isTagSelected(tag.id)"
+                  (change)="toggleTag(tag.id)">
+
+                <span>
+                  {{ tag.name }}
+                </span>
+
+              </label>
+
+            }
+
+          </div>
+
+        }
+
+
+        <!-- CREATE NEW TAG -->
+
+        <div class="new-tag">
+
+          <input
+            type="text"
+            placeholder="New tag name..."
+            [value]="newTagName()"
+            (input)="onNewTagInput($event)">
+
+
+          <button
+            type="button"
+            class="small-button"
+            (click)="createTag()">
+
+            Add Tag
+
+          </button>
+
+        </div>
+
+      </div>
 
 
       <!-- PHONE NUMBERS -->
@@ -321,6 +414,8 @@
       </div>
 
 
+      <!-- FORM ACTIONS -->
+
       <div class="form-actions">
 
         <button
@@ -328,9 +423,13 @@
           type="submit">
 
           @if (isEditing) {
+
             Save Changes
+
           } @else {
+
             Save Contact
+
           }
 
         </button>

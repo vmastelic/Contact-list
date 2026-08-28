@@ -20,6 +20,7 @@ import {
 
 import {
   Contact,
+  Tag,
   CreateContactRequest,
   UpdateContactRequest
 } from '../../models/contact';
@@ -27,6 +28,10 @@ import {
 import {
   ContactService
 } from '../../services/contact.service';
+
+import {
+  TagService
+} from '../../services/tag.service';
 
 
 type PhoneFormGroup = FormGroup<{
@@ -58,25 +63,50 @@ export class ContactFormComponent
   private contactService =
     inject(ContactService);
 
+  private tagService =
+    inject(TagService);
+
   private formBuilder =
     inject(FormBuilder);
 
 
+  // null = creating a new contact
   @Input()
   contact: Contact | null = null;
 
 
+  // All tags from the database
+  @Input()
+  availableTags: Tag[] = [];
+
+
+  // Emits after a contact is created or updated
   @Output()
   saved =
     new EventEmitter<Contact>();
 
 
+  // Emits when the user closes the form
   @Output()
   cancelled =
     new EventEmitter<void>();
 
 
+  // Emits when a new tag is created
+  @Output()
+  tagCreated =
+    new EventEmitter<Tag>();
+
+
   serverError =
+    signal('');
+
+
+  selectedTagIds =
+    signal<number[]>([]);
+
+
+  newTagName =
     signal('');
 
 
@@ -125,10 +155,12 @@ export class ContactFormComponent
       ],
 
       phoneNumbers:
-        this.formBuilder.array<PhoneFormGroup>([]),
+        this.formBuilder
+          .array<PhoneFormGroup>([]),
 
       emailAddresses:
-        this.formBuilder.array<EmailFormGroup>([])
+        this.formBuilder
+          .array<EmailFormGroup>([])
     });
 
 
@@ -143,6 +175,7 @@ export class ContactFormComponent
 
 
   get isEditing(): boolean {
+
     return this.contact !== null;
   }
 
@@ -167,18 +200,24 @@ export class ContactFormComponent
 
     this.serverError.set('');
 
+    this.newTagName.set('');
+
     this.contactForm.reset();
 
     this.phoneNumbers.clear();
 
     this.emailAddresses.clear();
 
+    this.selectedTagIds.set([]);
 
+
+    // ADD mode
     if (this.contact === null) {
       return;
     }
 
 
+    // EDIT mode
     this.contactForm.patchValue({
 
       firstName:
@@ -204,6 +243,15 @@ export class ContactFormComponent
     });
 
 
+    // Select tags already assigned to this contact
+    this.selectedTagIds.set(
+      this.contact.tags.map(
+        tag => tag.id
+      )
+    );
+
+
+    // Existing phone numbers
     this.contact.phoneNumbers
       .forEach(phone => {
 
@@ -216,6 +264,7 @@ export class ContactFormComponent
       });
 
 
+    // Existing email addresses
     this.contact.emailAddresses
       .forEach(email => {
 
@@ -318,6 +367,150 @@ export class ContactFormComponent
   }
 
 
+  // -------------------------
+  // TAG SELECTION
+  // -------------------------
+
+  isTagSelected(
+    tagId: number
+  ): boolean {
+
+    return this.selectedTagIds()
+      .includes(tagId);
+  }
+
+
+  toggleTag(
+    tagId: number
+  ): void {
+
+    const currentIds =
+      this.selectedTagIds();
+
+
+    if (currentIds.includes(tagId)) {
+
+      this.selectedTagIds.set(
+        currentIds.filter(
+          id => id !== tagId
+        )
+      );
+
+    } else {
+
+      this.selectedTagIds.set([
+        ...currentIds,
+        tagId
+      ]);
+    }
+  }
+
+
+  // -------------------------
+  // NEW TAG
+  // -------------------------
+
+  onNewTagInput(
+    event: Event
+  ): void {
+
+    const input =
+      event.target as HTMLInputElement;
+
+    this.newTagName.set(
+      input.value
+    );
+  }
+
+
+  createTag(): void {
+
+    this.serverError.set('');
+
+
+    const name =
+      this.newTagName().trim();
+
+
+    if (!name) {
+
+      this.serverError.set(
+        'Please enter a tag name.'
+      );
+
+      return;
+    }
+
+
+    this.tagService
+      .createTag(name)
+      .subscribe({
+
+        next: (createdTag) => {
+
+          // Tell parent that a new tag exists
+          this.tagCreated.emit(
+            createdTag
+          );
+
+
+          // Automatically select the new tag
+          this.selectedTagIds.update(
+            ids => {
+
+              if (
+                ids.includes(
+                  createdTag.id
+                )
+              ) {
+                return ids;
+              }
+
+
+              return [
+                ...ids,
+                createdTag.id
+              ];
+            }
+          );
+
+
+          // Clear input
+          this.newTagName.set('');
+        },
+
+
+        error: (error) => {
+
+          console.error(
+            'Error creating tag:',
+            error
+          );
+
+
+          // Backend returns 409
+          // when a tag already exists
+          if (error.status === 409) {
+
+            this.serverError.set(
+              'A tag with this name already exists.'
+            );
+
+          } else {
+
+            this.serverError.set(
+              'Could not create the tag.'
+            );
+          }
+        }
+      });
+  }
+
+
+  // -------------------------
+  // SAVE CONTACT
+  // -------------------------
+
   saveContact(): void {
 
     this.serverError.set('');
@@ -346,7 +539,8 @@ export class ContactFormComponent
   private createContact(): void {
 
     const formValue =
-      this.contactForm.getRawValue();
+      this.contactForm
+        .getRawValue();
 
 
     const request:
@@ -398,7 +592,8 @@ export class ContactFormComponent
           })),
 
 
-      tagIds: []
+      tagIds:
+        this.selectedTagIds()
     };
 
 
@@ -442,7 +637,8 @@ export class ContactFormComponent
 
 
     const formValue =
-      this.contactForm.getRawValue();
+      this.contactForm
+        .getRawValue();
 
 
     const request:
@@ -495,8 +691,7 @@ export class ContactFormComponent
 
 
       tagIds:
-        currentContact.tags
-          .map(tag => tag.id)
+        this.selectedTagIds()
     };
 
 
