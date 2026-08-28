@@ -4,6 +4,7 @@ using ContactManager.Api.DTOs.ContactDTOs;
 using ContactManager.Api.DTOs.TagDTOs;
 using ContactManager.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ContactManager.Api.Services
 {
@@ -11,7 +12,9 @@ namespace ContactManager.Api.Services
     {
         private readonly AppDbContext _context;
 
-        public ContactService(AppDbContext context)
+        public ContactService(
+            AppDbContext context
+        )
         {
             _context = context;
         }
@@ -20,93 +23,25 @@ namespace ContactManager.Api.Services
         {
             return await _context.Contacts
                 .AsNoTracking()
-                .Select(c => new ContactDto
-                {
-                    Id = c.Id,
-                    FirstName = c.FirstName,
-                    LastName = c.LastName,
-                    Street = c.Street,
-                    City = c.City,
-                    PostalCode = c.PostalCode,
-                    Country = c.Country,
-                    Note = c.Note,
-
-                    PhoneNumbers = c.PhoneNumbers
-                        .Select(p => new PhoneNumberDto
-                        {
-                            Type = p.Type,
-                            Value = p.Value
-                        })
-                        .ToList(),
-
-                    EmailAddresses = c.EmailAddresses
-                        .Select(e => new EmailAddressDto
-                        {
-                            Type = e.Type,
-                            Value = e.Value
-                        })
-                        .ToList(),
-
-                    Tags = c.Tags
-                        .Select(t => new TagDto
-                        {
-                            Id = t.Id,
-                            Name = t.Name
-                        })
-                        .ToList()
-                })
+                .Select(ContactSelector())
                 .ToListAsync();
         }
 
-        public async Task<ContactDto?> GetByIdAsync(int id)
+        public async Task<ContactDto?> GetByIdAsync(
+            int id
+        )
         {
             return await _context.Contacts
                 .AsNoTracking()
                 .Where(c => c.Id == id)
-                .Select(c => new ContactDto
-                {
-                    Id = c.Id,
-                    FirstName = c.FirstName,
-                    LastName = c.LastName,
-                    Street = c.Street,
-                    City = c.City,
-                    PostalCode = c.PostalCode,
-                    Country = c.Country,
-                    Note = c.Note,
-
-                    PhoneNumbers = c.PhoneNumbers
-                        .Select(p => new PhoneNumberDto
-                        {
-                            Type = p.Type,
-                            Value = p.Value
-                        })
-                        .ToList(),
-
-                    EmailAddresses = c.EmailAddresses
-                        .Select(e => new EmailAddressDto
-                        {
-                            Type = e.Type,
-                            Value = e.Value
-                        })
-                        .ToList(),
-
-                    Tags = c.Tags
-                        .Select(t => new TagDto
-                        {
-                            Id = t.Id,
-                            Name = t.Name
-                        })
-                        .ToList()
-                })
+                .Select(ContactSelector())
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<ContactDto> CreateAsync(CreateContactDto dto)
+        public async Task<ContactDto> CreateAsync(
+            CreateContactDto dto
+        )
         {
-            var tags = await _context.Tags
-                .Where(t => dto.TagIds.Contains(t.Id))
-                .ToListAsync();
-
             var contact = new Contact
             {
                 FirstName = dto.FirstName,
@@ -115,52 +50,69 @@ namespace ContactManager.Api.Services
                 City = dto.City,
                 PostalCode = dto.PostalCode,
                 Country = dto.Country,
-                Note = dto.Note,
-
-                PhoneNumbers = dto.PhoneNumbers
-                .Select(p => new PhoneNumber
-                {
-                    Type = p.Type,
-                    Value = p.Value
-                })
-                .ToList(),
-
-                EmailAddresses = dto.EmailAddresses
-                .Select(e => new EmailAddress
-                {
-                    Type = e.Type,
-                    Value = e.Value
-                })
-                .ToList(),
-
-                Tags = tags
+                Note = dto.Note
             };
+
+            foreach (var phone in dto.PhoneNumbers)
+            {
+                contact.PhoneNumbers.Add(
+                    new PhoneNumber
+                    {
+                        Type = phone.Type,
+                        Value = phone.Value
+                    }
+                );
+            }
+
+            foreach (var email in dto.EmailAddresses)
+            {
+                contact.EmailAddresses.Add(
+                    new EmailAddress
+                    {
+                        Type = email.Type,
+                        Value = email.Value
+                    }
+                );
+            }
+
+            var tagIds =
+                dto.TagIds
+                    .Distinct()
+                    .ToList();
+
+            var tags =
+                await _context.Tags
+                    .Where(t =>
+                        tagIds.Contains(t.Id)
+                    )
+                    .ToListAsync();
+
+            foreach (var tag in tags)
+            {
+                contact.Tags.Add(tag);
+            }
 
             _context.Contacts.Add(contact);
 
             await _context.SaveChangesAsync();
 
-            return new ContactDto
-            {
-                Id = contact.Id,
-                FirstName = contact.FirstName,
-                LastName = contact.LastName,
-                Street = contact.Street,
-                City = contact.City,
-                PostalCode = contact.PostalCode,
-                Country = contact.Country,
-                Note = contact.Note
-            };
+            return await GetByIdAsync(contact.Id)
+                ?? throw new InvalidOperationException();
         }
 
-        public async Task<ContactDto?> UpdateAsync(int id, UpdateContactDto dto)
+        public async Task<ContactDto?> UpdateAsync(
+            int id,
+            UpdateContactDto dto
+        )
         {
-
-            var contact = await _context.Contacts
-                .Include(c => c.PhoneNumbers)
-                .Include(c => c.EmailAddresses)
-                .Include(c => c.Tags)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var contact =
+                await _context.Contacts
+                    .Include(c => c.PhoneNumbers)
+                    .Include(c => c.EmailAddresses)
+                    .Include(c => c.Tags)
+                    .FirstOrDefaultAsync(
+                        c => c.Id == id
+                    );
 
             if (contact == null)
             {
@@ -175,34 +127,53 @@ namespace ContactManager.Api.Services
             contact.Country = dto.Country;
             contact.Note = dto.Note;
 
-            _context.PhoneNumbers.RemoveRange(contact.PhoneNumbers);
-            _context.EmailAddresses.RemoveRange(contact.EmailAddresses);
+            _context.PhoneNumbers.RemoveRange(
+                contact.PhoneNumbers
+            );
+
+            _context.EmailAddresses.RemoveRange(
+                contact.EmailAddresses
+            );
 
             contact.PhoneNumbers.Clear();
+
             contact.EmailAddresses.Clear();
-            contact.Tags.Clear();
 
             foreach (var phone in dto.PhoneNumbers)
             {
-                contact.PhoneNumbers.Add(new PhoneNumber
-                {
-                    Type = phone.Type,
-                    Value = phone.Value
-                });
+                contact.PhoneNumbers.Add(
+                    new PhoneNumber
+                    {
+                        Type = phone.Type,
+                        Value = phone.Value
+                    }
+                );
             }
 
             foreach (var email in dto.EmailAddresses)
             {
-                contact.EmailAddresses.Add(new EmailAddress
-                {
-                    Type = email.Type,
-                    Value = email.Value
-                });
+                contact.EmailAddresses.Add(
+                    new EmailAddress
+                    {
+                        Type = email.Type,
+                        Value = email.Value
+                    }
+                );
             }
 
-            var tags = await _context.Tags
-                .Where(t => dto.TagIds.Contains(t.Id))
-                .ToListAsync();
+            contact.Tags.Clear();
+
+            var tagIds =
+                dto.TagIds
+                    .Distinct()
+                    .ToList();
+
+            var tags =
+                await _context.Tags
+                    .Where(t =>
+                        tagIds.Contains(t.Id)
+                    )
+                    .ToListAsync();
 
             foreach (var tag in tags)
             {
@@ -211,13 +182,18 @@ namespace ContactManager.Api.Services
 
             await _context.SaveChangesAsync();
 
-            return await GetByIdAsync(contact.Id);
+            return await GetByIdAsync(id);
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(
+            int id
+        )
         {
-            var contact = await _context.Contacts
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var contact =
+                await _context.Contacts
+                    .FirstOrDefaultAsync(
+                        c => c.Id == id
+                    );
 
             if (contact == null)
             {
@@ -225,122 +201,232 @@ namespace ContactManager.Api.Services
             }
 
             _context.Contacts.Remove(contact);
+
             await _context.SaveChangesAsync();
 
             return true;
-
         }
 
-        public async Task<List<ContactDto>> FilterAsync(int tagId)
+        public async Task<List<ContactDto>> FilterAsync(
+            int tagId
+        )
         {
             return await _context.Contacts
                 .AsNoTracking()
-                .Where(c => c.Tags.Any(t => t.Id == tagId))
-                .Select(c => new ContactDto
-                {
-                    Id = c.Id,
-                    FirstName = c.FirstName,
-                    LastName = c.LastName,
-                    Street = c.Street,
-                    City = c.City,
-                    PostalCode = c.PostalCode,
-                    Country = c.Country,
-                    Note = c.Note,
-
-                    PhoneNumbers = c.PhoneNumbers
-                        .Select(p => new PhoneNumberDto
-                        {
-                            Type = p.Type,
-                            Value = p.Value
-                        })
-                        .ToList(),
-
-                    EmailAddresses = c.EmailAddresses
-                        .Select(e => new EmailAddressDto
-                        {
-                            Type = e.Type,
-                            Value = e.Value
-                        })
-                        .ToList(),
-
-                    Tags = c.Tags
-                        .Select(t => new TagDto
-                        {
-                            Id = t.Id,
-                            Name = t.Name
-                        })
-                        .ToList()
-                })
+                .Where(c =>
+                    c.Tags.Any(
+                        t => t.Id == tagId
+                    )
+                )
+                .Select(ContactSelector())
                 .ToListAsync();
         }
-        public async Task<List<ContactDto>> SearchAsync(string search, int page, int pageSize, string sortBy, string sortDirection)
+
+        public async Task<PagedResultDto<ContactDto>> SearchAsync(
+            string? search,
+            int page,
+            int pageSize,
+            string sortBy,
+            string sortDirection,
+            int? tagId
+        )
         {
-            var query = _context.Contacts
-                .AsNoTracking()
-                .Where(c =>
-                    EF.Functions.ILike(c.FirstName, $"%{search}%") ||
-                    EF.Functions.ILike(c.LastName, $"%{search}%") ||
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            if (pageSize > 100)
+            {
+                pageSize = 100;
+            }
+
+            var query =
+                _context.Contacts
+                    .AsNoTracking()
+                    .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var text = search.Trim();
+
+                query = query.Where(c =>
+                    EF.Functions.ILike(
+                        c.FirstName,
+                        $"%{text}%"
+                    )
+                    ||
+                    EF.Functions.ILike(
+                        c.LastName,
+                        $"%{text}%"
+                    )
+                    ||
                     c.PhoneNumbers.Any(p =>
-                        EF.Functions.ILike(p.Value, $"%{search}%")) ||
+                        EF.Functions.ILike(
+                            p.Value,
+                            $"%{text}%"
+                        )
+                    )
+                    ||
                     c.EmailAddresses.Any(e =>
-                        EF.Functions.ILike(e.Value, $"%{search}%")) ||
+                        EF.Functions.ILike(
+                            e.Value,
+                            $"%{text}%"
+                        )
+                    )
+                    ||
                     c.Tags.Any(t =>
-                        EF.Functions.ILike(t.Name, $"%{search}%"))
+                        EF.Functions.ILike(
+                            t.Name,
+                            $"%{text}%"
+                        )
+                    )
+                );
+            }
+
+            if (tagId.HasValue)
+            {
+                query = query.Where(c =>
+                    c.Tags.Any(
+                        t => t.Id == tagId.Value
+                    )
+                );
+            }
+
+            var totalCount =
+                await query.CountAsync();
+
+            var descending =
+                sortDirection.Equals(
+                    "desc",
+                    StringComparison.OrdinalIgnoreCase
                 );
 
-            if (sortBy == "firstName")
-            {
-                query = sortDirection == "desc"
-                    ? query.OrderByDescending(c => c.FirstName)
-                    : query.OrderBy(c => c.FirstName);
-            }
-            else
-            {
-                query = sortDirection == "desc"
-                    ? query.OrderByDescending(c => c.LastName)
-                    : query.OrderBy(c => c.LastName);
-            }
-
-            return await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(c => new ContactDto
+            query =
+                sortBy.ToLower() switch
                 {
-                    Id = c.Id,
-                    FirstName = c.FirstName,
-                    LastName = c.LastName,
-                    Street = c.Street,
-                    City = c.City,
-                    PostalCode = c.PostalCode,
-                    Country = c.Country,
-                    Note = c.Note,
+                    "firstname" =>
+                        descending
+                            ? query.OrderByDescending(
+                                c => c.FirstName
+                            )
+                            : query.OrderBy(
+                                c => c.FirstName
+                            ),
 
-                    PhoneNumbers = c.PhoneNumbers
-                        .Select(p => new PhoneNumberDto
-                        {
-                            Type = p.Type,
-                            Value = p.Value
-                        })
-                        .ToList(),
+                    _ =>
+                        descending
+                            ? query.OrderByDescending(
+                                c => c.LastName
+                            )
+                            : query.OrderBy(
+                                c => c.LastName
+                            )
+                };
 
-                    EmailAddresses = c.EmailAddresses
-                        .Select(e => new EmailAddressDto
-                        {
-                            Type = e.Type,
-                            Value = e.Value
-                        })
-                        .ToList(),
+            var items =
+                await query
+                    .Skip(
+                        (page - 1) * pageSize
+                    )
+                    .Take(pageSize)
+                    .Select(ContactSelector())
+                    .ToListAsync();
 
-                    Tags = c.Tags
-                        .Select(t => new TagDto
-                        {
-                            Id = t.Id,
-                            Name = t.Name
-                        })
-                        .ToList()
-                })
-                .ToListAsync();
+            var totalPages =
+                totalCount == 0
+                    ? 0
+                    : (int)Math.Ceiling(
+                        totalCount /
+                        (double)pageSize
+                    );
+
+            return new PagedResultDto<ContactDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = totalPages
+            };
+        }
+
+        private static Expression<Func<Contact, ContactDto>>
+            ContactSelector()
+        {
+            return contact =>
+                new ContactDto
+                {
+                    Id = contact.Id,
+
+                    FirstName =
+                        contact.FirstName,
+
+                    LastName =
+                        contact.LastName,
+
+                    Street =
+                        contact.Street,
+
+                    City =
+                        contact.City,
+
+                    PostalCode =
+                        contact.PostalCode,
+
+                    Country =
+                        contact.Country,
+
+                    Note =
+                        contact.Note,
+
+                    PhoneNumbers =
+                        contact.PhoneNumbers
+                            .Select(phone =>
+                                new PhoneNumberDto
+                                {
+                                    Type =
+                                        phone.Type,
+
+                                    Value =
+                                        phone.Value
+                                }
+                            )
+                            .ToList(),
+
+                    EmailAddresses =
+                        contact.EmailAddresses
+                            .Select(email =>
+                                new EmailAddressDto
+                                {
+                                    Type =
+                                        email.Type,
+
+                                    Value =
+                                        email.Value
+                                }
+                            )
+                            .ToList(),
+
+                    Tags =
+                        contact.Tags
+                            .Select(tag =>
+                                new TagDto
+                                {
+                                    Id =
+                                        tag.Id,
+
+                                    Name =
+                                        tag.Name
+                                }
+                            )
+                            .ToList()
+                };
         }
     }
-
 }
