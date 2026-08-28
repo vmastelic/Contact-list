@@ -1,6 +1,7 @@
 ﻿using ContactManager.Api.Data;
 using ContactManager.Api.DTOs.TagDTOs;
 using ContactManager.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ContactManager.Api.Services
 {
@@ -8,6 +9,20 @@ namespace ContactManager.Api.Services
     {
 
         private readonly AppDbContext _context;
+
+        public async Task<List<TagDto>> GetAllAsync()
+        {
+            return await _context.Tags
+                .AsNoTracking()
+                .OrderBy(t => t.Name)
+                .Select(t => new TagDto
+                {
+                    Id = t.Id,
+                    Name = t.Name
+                })
+                .ToListAsync();
+        }
+
         public TagService(AppDbContext context)
         {
             _context = context;

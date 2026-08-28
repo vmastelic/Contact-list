@@ -16,6 +16,14 @@ namespace ContactManager.Api.Controllers
             _tagService = tagService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var tags = await _tagService.GetAllAsync();
+
+            return Ok(tags);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateTagDto dto)
         {
