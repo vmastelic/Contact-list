@@ -21,7 +21,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 h1 {
@@ -34,12 +34,49 @@ h1 {
   color: #666;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
 
+.search-bar {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.search-bar input {
+  flex: 1;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-bar label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.filter-bar select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+}
 
 .contact-grid {
   display: grid;
-  grid-template-columns:
-    repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(280px, 1fr)
+  );
   gap: 20px;
 }
 
@@ -70,8 +107,6 @@ h1 {
   font-size: 15px;
 }
 
-
-
 .tags {
   display: flex;
   flex-wrap: wrap;
@@ -85,14 +120,21 @@ h1 {
   font-size: 13px;
 }
 
-
-
 button {
   border: none;
   border-radius: 6px;
   padding: 9px 14px;
   cursor: pointer;
   font-size: 14px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .primary-button {
@@ -102,22 +144,27 @@ button {
 
 .edit-button {
   background: #e9e9e9;
+  color: #222;
 }
 
 .delete-button {
   background: #ffe2e2;
+  color: #8a1111;
 }
 
 .cancel-button {
   background: #e5e5e5;
+  color: #222;
 }
 
 .small-button {
   background: #e9e9e9;
+  color: #222;
 }
 
 .remove-button {
   background: #ffe2e2;
+  color: #8a1111;
 }
 
 .card-actions {
@@ -125,8 +172,6 @@ button {
   gap: 10px;
   margin-top: 20px;
 }
-
-
 
 .form-overlay {
   position: fixed;
@@ -170,8 +215,6 @@ button {
   margin-bottom: 25px;
 }
 
-
-
 form {
   display: flex;
   flex-direction: column;
@@ -184,7 +227,8 @@ label {
 }
 
 input,
-textarea {
+textarea,
+select {
   width: 100%;
 
   border: 1px solid #ccc;
@@ -194,6 +238,8 @@ textarea {
   padding: 10px;
 
   font-size: 14px;
+
+  background: white;
 }
 
 textarea {
@@ -202,12 +248,11 @@ textarea {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
   outline: none;
   border-color: #555;
 }
-
-
 
 input.ng-invalid.ng-touched,
 textarea.ng-invalid.ng-touched {
@@ -224,8 +269,6 @@ textarea.ng-invalid.ng-touched {
   margin-top: 4px;
 }
 
-
-
 .form-section {
   margin-top: 25px;
 
@@ -240,6 +283,8 @@ textarea.ng-invalid.ng-touched {
   justify-content: space-between;
 
   align-items: center;
+
+  gap: 10px;
 
   margin-bottom: 12px;
 }
@@ -265,8 +310,6 @@ textarea.ng-invalid.ng-touched {
   width: 100%;
 }
 
-
-
 .form-actions {
   display: flex;
 
@@ -277,20 +320,50 @@ textarea.ng-invalid.ng-touched {
   margin-top: 30px;
 }
 
+.empty-state {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  color: #666;
+}
 
-
-@media (max-width: 650px) {
+@media (max-width: 750px) {
 
   .header {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar {
+    width: 100%;
+  }
+
   .dynamic-row {
     grid-template-columns: 1fr;
   }
 
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .form-actions {
+    flex-direction: column;
+  }
+
+  .card-actions {
     flex-direction: column;
   }
 

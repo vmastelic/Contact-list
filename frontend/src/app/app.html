@@ -1,105 +1,277 @@
 <div class="container">
 
-  <h1>Contacts</h1>
+  <div class="header">
 
-  <p class="count">
-    Total contacts: {{ contacts().length }}
-  </p>
-  
-  <div class="search-bar">
-    
-    <input
-     type="text"
-     placeholder="Search contacts..."
-      [value]="searchText()"
-      (input)="onSearchInput($event)">
-    
+    <div>
+
+      <h1>
+        Contacts
+      </h1>
+
+      <p class="count">
+        Total contacts:
+        {{ contacts().length }}
+      </p>
+
+    </div>
+
+
     <button
-     type="button"
-     (click)="searchContacts()">
-     Search
+      class="primary-button"
+      type="button"
+      (click)="openAddForm()">
+
+      Add Contact
+
     </button>
-  
+
   </div>
+
+
+  <!-- SEARCH AND FILTER -->
+
+  <div class="toolbar">
+
+
+    <!-- SEARCH -->
+
+    <div class="search-bar">
+
+      <input
+        type="text"
+        placeholder="Search contacts..."
+        [value]="searchText()"
+        (input)="onSearchInput($event)">
+
+
+      <button
+        type="button"
+        (click)="searchContacts()">
+
+        Search
+
+      </button>
+
+    </div>
+
+
+    <!-- TAG FILTER -->
+
+    <div class="filter-bar">
+
+      <label>
+        Filter by tag:
+      </label>
+
+
+      <select
+        (change)="onTagFilterChange($event)">
+
+
+        <option value="">
+          All tags
+        </option>
+
+
+        @for (
+          tag of tags();
+          track tag.id
+        ) {
+
+          <option
+            [value]="tag.id">
+
+            {{ tag.name }}
+
+          </option>
+
+        }
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+  <!-- CONTACT LIST -->
 
   <div class="contact-grid">
 
-    @for (contact of contacts(); track contact.id) {
+
+    @for (
+      contact of contacts();
+      track contact.id
+    ) {
 
       <div class="contact-card">
 
+
         <h2>
-          {{ contact.firstName }} {{ contact.lastName }}
+          {{ contact.firstName }}
+          {{ contact.lastName }}
         </h2>
 
-        <p>
-          <strong>City:</strong>
-          {{ contact.city }}
-        </p>
 
-        <p>
-          <strong>Country:</strong>
-          {{ contact.country }}
-        </p>
+        @if (contact.city) {
 
-        <p>
-          <strong>Address:</strong>
-          {{ contact.street }}
-        </p>
-
-        @if (contact.phoneNumbers.length > 0) {
-
-          <h3>Phone numbers</h3>
-
-          @for (phone of contact.phoneNumbers; track $index) {
-            <p>
-              <strong>{{ phone.type }}:</strong>
-              {{ phone.value }}
-            </p>
-          }
+          <p>
+            <strong>City:</strong>
+            {{ contact.city }}
+          </p>
 
         }
 
 
-        @if (contact.emailAddresses.length > 0) {
+        @if (contact.country) {
 
-          <h3>Email addresses</h3>
-
-          @for (email of contact.emailAddresses; track $index) {
-            <p>
-              <strong>{{ email.type }}:</strong>
-              {{ email.value }}
-            </p>
-          }
+          <p>
+            <strong>Country:</strong>
+            {{ contact.country }}
+          </p>
 
         }
 
 
-        @if (contact.tags.length > 0) {
+        @if (contact.street) {
 
-          <h3>Tags</h3>
-
-          @for (tag of contact.tags; track tag.id) {
-            <span>
-              {{ tag.name }}
-            </span>
-          }
+          <p>
+            <strong>Address:</strong>
+            {{ contact.street }}
+          </p>
 
         }
 
 
-        <button
-          type="button"
-          (click)="editContact(contact)">
-          Edit
-        </button>
+        <!-- PHONE NUMBERS -->
+
+        @if (
+          contact.phoneNumbers.length > 0
+        ) {
+
+          <div class="contact-section">
+
+            <h3>
+              Phone numbers
+            </h3>
 
 
-        <button
-          type="button"
-          (click)="deleteContact(contact.id)">
-          Delete
-        </button>
+            @for (
+              phone of contact.phoneNumbers;
+              track $index
+            ) {
+
+              <p>
+
+                <strong>
+                  {{ phone.type }}:
+                </strong>
+
+                {{ phone.value }}
+
+              </p>
+
+            }
+
+          </div>
+
+        }
+
+
+        <!-- EMAILS -->
+
+        @if (
+          contact.emailAddresses.length > 0
+        ) {
+
+          <div class="contact-section">
+
+            <h3>
+              Email addresses
+            </h3>
+
+
+            @for (
+              email of contact.emailAddresses;
+              track $index
+            ) {
+
+              <p>
+
+                <strong>
+                  {{ email.type }}:
+                </strong>
+
+                {{ email.value }}
+
+              </p>
+
+            }
+
+          </div>
+
+        }
+
+
+        <!-- TAGS -->
+
+        @if (
+          contact.tags.length > 0
+        ) {
+
+          <div class="contact-section">
+
+            <h3>
+              Tags
+            </h3>
+
+
+            <div class="tags">
+
+              @for (
+                tag of contact.tags;
+                track tag.id
+              ) {
+
+                <span class="tag">
+
+                  {{ tag.name }}
+
+                </span>
+
+              }
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <!-- ACTIONS -->
+
+        <div class="card-actions">
+
+          <button
+            class="edit-button"
+            type="button"
+            (click)="editContact(contact)">
+
+            Edit
+
+          </button>
+
+
+          <button
+            class="delete-button"
+            type="button"
+            (click)="deleteContact(contact.id)">
+
+            Delete
+
+          </button>
+
+        </div>
 
       </div>
 
@@ -108,190 +280,400 @@
   </div>
 
 
-  <button
-    type="button"
-    (click)="openAddForm()">
-    Add Contact
-  </button>
-
+  <!-- ADD / EDIT FORM -->
 
   @if (showAddForm) {
 
-    <form [formGroup]="contactForm">
+    <div class="form-overlay">
+
+      <div class="contact-form-container">
 
 
-      @if (editingContactId === null) {
-
-        <h2>Add Contact</h2>
-
-      } @else {
-
-        <h2>Edit Contact</h2>
-
-      }
+        <form
+          [formGroup]="contactForm"
+          (ngSubmit)="saveContact()">
 
 
+          @if (
+            editingContactId === null
+          ) {
 
-      <input
-        type="text"
-        formControlName="firstName"
-        placeholder="First name">
+            <h2>
+              Add Contact
+            </h2>
 
+          } @else {
 
-      <input
-        type="text"
-        formControlName="lastName"
-        placeholder="Last name">
+            <h2>
+              Edit Contact
+            </h2>
 
-
-      <input
-        type="text"
-        formControlName="street"
-        placeholder="Street">
+          }
 
 
-      <input
-        type="text"
-        formControlName="city"
-        placeholder="City">
+          <!-- FIRST NAME -->
+
+          <label>
+            First name *
+          </label>
+
+          <input
+            type="text"
+            formControlName="firstName"
+            placeholder="First name">
 
 
-      <input
-        type="text"
-        formControlName="postalCode"
-        placeholder="Postal code">
+          @if (
+            contactForm.controls
+              .firstName.invalid &&
+            contactForm.controls
+              .firstName.touched
+          ) {
+
+            <small class="error">
+              First name is required.
+            </small>
+
+          }
 
 
-      <input
-        type="text"
-        formControlName="country"
-        placeholder="Country">
+          <!-- LAST NAME -->
+
+          <label>
+            Last name *
+          </label>
+
+          <input
+            type="text"
+            formControlName="lastName"
+            placeholder="Last name">
 
 
-      <textarea
-        formControlName="note"
-        placeholder="Note">
-      </textarea>
+          @if (
+            contactForm.controls
+              .lastName.invalid &&
+            contactForm.controls
+              .lastName.touched
+          ) {
+
+            <small class="error">
+              Last name is required.
+            </small>
+
+          }
 
 
+          <label>
+            Street
+          </label>
 
-      <h3>Phone numbers</h3>
-
-      <div formArrayName="phoneNumbers">
-
-        @for (
-          phone of phoneNumbers.controls;
-          track $index;
-          let i = $index
-        ) {
-
-          <div [formGroupName]="i">
-
-            <input
-              type="text"
-              formControlName="type"
-              placeholder="Type (Mobile, Work...)">
+          <input
+            type="text"
+            formControlName="street"
+            placeholder="Street">
 
 
-            <input
-              type="text"
-              formControlName="value"
-              placeholder="Phone number">
+          <label>
+            City
+          </label>
+
+          <input
+            type="text"
+            formControlName="city"
+            placeholder="City">
+
+
+          <label>
+            Postal code
+          </label>
+
+          <input
+            type="text"
+            formControlName="postalCode"
+            placeholder="Postal code">
+
+
+          <label>
+            Country
+          </label>
+
+          <input
+            type="text"
+            formControlName="country"
+            placeholder="Country">
+
+
+          <label>
+            Note
+          </label>
+
+          <textarea
+            formControlName="note"
+            placeholder="Note">
+          </textarea>
+
+
+          <!-- PHONES -->
+
+          <div class="form-section">
+
+            <div class="section-header">
+
+              <h3>
+                Phone numbers
+              </h3>
+
+
+              <button
+                type="button"
+                class="small-button"
+                (click)="addPhoneNumber()">
+
+                + Add phone
+
+              </button>
+
+            </div>
+
+
+            <div
+              formArrayName="phoneNumbers">
+
+
+              @for (
+                phone of
+                  phoneNumbers.controls;
+                track $index;
+                let i = $index
+              ) {
+
+                <div
+                  class="dynamic-row"
+                  [formGroupName]="i">
+
+
+                  <div class="dynamic-field">
+
+                    <input
+                      type="text"
+                      formControlName="type"
+                      placeholder="Type">
+
+
+                    @if (
+                      phone.controls
+                        .type.invalid &&
+                      phone.controls
+                        .type.touched
+                    ) {
+
+                      <small class="error">
+
+                        Phone type is required.
+
+                      </small>
+
+                    }
+
+                  </div>
+
+
+                  <div class="dynamic-field">
+
+                    <input
+                      type="text"
+                      formControlName="value"
+                      placeholder="Phone number">
+
+
+                    @if (
+                      phone.controls
+                        .value.invalid &&
+                      phone.controls
+                        .value.touched
+                    ) {
+
+                      <small class="error">
+
+                        Please enter a valid
+                        phone number.
+
+                      </small>
+
+                    }
+
+                  </div>
+
+
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removePhoneNumber(i)">
+
+                    Remove
+
+                  </button>
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+
+          <!-- EMAILS -->
+
+          <div class="form-section">
+
+            <div class="section-header">
+
+              <h3>
+                Email addresses
+              </h3>
+
+
+              <button
+                type="button"
+                class="small-button"
+                (click)="addEmailAddress()">
+
+                + Add email
+
+              </button>
+
+            </div>
+
+
+            <div
+              formArrayName="emailAddresses">
+
+
+              @for (
+                email of
+                  emailAddresses.controls;
+                track $index;
+                let i = $index
+              ) {
+
+                <div
+                  class="dynamic-row"
+                  [formGroupName]="i">
+
+
+                  <div class="dynamic-field">
+
+                    <input
+                      type="text"
+                      formControlName="type"
+                      placeholder="Type">
+
+
+                    @if (
+                      email.controls
+                        .type.invalid &&
+                      email.controls
+                        .type.touched
+                    ) {
+
+                      <small class="error">
+
+                        Email type is required.
+
+                      </small>
+
+                    }
+
+                  </div>
+
+
+                  <div class="dynamic-field">
+
+                    <input
+                      type="email"
+                      formControlName="value"
+                      placeholder="Email address">
+
+
+                    @if (
+                      email.controls
+                        .value.invalid &&
+                      email.controls
+                        .value.touched
+                    ) {
+
+                      <small class="error">
+
+                        Please enter a valid
+                        email address.
+
+                      </small>
+
+                    }
+
+                  </div>
+
+
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeEmailAddress(i)">
+
+                    Remove
+
+                  </button>
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="form-actions">
+
+            <button
+              class="primary-button"
+              type="submit">
+
+
+              @if (
+                editingContactId === null
+              ) {
+
+                Save Contact
+
+              } @else {
+
+                Save Changes
+
+              }
+
+
+            </button>
 
 
             <button
+              class="cancel-button"
               type="button"
-              (click)="removePhoneNumber(i)">
-              Remove phone
+              (click)="cancelForm()">
+
+              Cancel
+
             </button>
 
           </div>
 
-        }
+        </form>
 
       </div>
 
-
-      <button
-        type="button"
-        (click)="addPhoneNumber()">
-        Add phone
-      </button>
-
-
-
-      <h3>Email addresses</h3>
-
-      <div formArrayName="emailAddresses">
-
-        @for (
-          email of emailAddresses.controls;
-          track $index;
-          let i = $index
-        ) {
-
-          <div [formGroupName]="i">
-
-            <input
-              type="text"
-              formControlName="type"
-              placeholder="Type (Personal, Work...)">
-
-
-            <input
-              type="email"
-              formControlName="value"
-              placeholder="Email address">
-
-
-            <button
-              type="button"
-              (click)="removeEmailAddress(i)">
-              Remove email
-            </button>
-
-          </div>
-
-        }
-
-      </div>
-
-
-      <button
-        type="button"
-        (click)="addEmailAddress()">
-        Add email
-      </button>
-
-
-
-      @if (editingContactId === null) {
-
-        <button
-          type="button"
-          (click)="addContact()">
-          Save Contact
-        </button>
-
-      } @else {
-
-        <button
-          type="button"
-          (click)="updateContact()">
-          Save Changes
-        </button>
-
-      }
-
-
-
-      <button
-        type="button"
-        (click)="cancelForm()">
-        Cancel
-      </button>
-
-    </form>
+    </div>
 
   }
 

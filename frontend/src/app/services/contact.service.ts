@@ -19,7 +19,9 @@ export class ContactService {
   }
 
   getContacts(): Observable<Contact[]> {
-    return this.http.get<Contact[]>(this.apiUrl);
+    return this.http.get<Contact[]>(
+      this.apiUrl
+    );
   }
 
   addContact(
@@ -43,7 +45,9 @@ export class ContactService {
     );
   }
 
-  deleteContact(id: number): Observable<void> {
+  deleteContact(
+    id: number
+  ): Observable<void> {
 
     return this.http.delete<void>(
       `${this.apiUrl}/${id}`
@@ -62,11 +66,25 @@ export class ContactService {
       `${this.apiUrl}/search`,
       {
         params: {
-          search: search,
-          page: page,
-          pageSize: pageSize,
-          sortBy: sortBy,
-          sortDirection: sortDirection
+          search,
+          page,
+          pageSize,
+          sortBy,
+          sortDirection
+        }
+      }
+    );
+  }
+
+  filterContacts(
+    tagId: number
+  ): Observable<Contact[]> {
+
+    return this.http.get<Contact[]>(
+      `${this.apiUrl}/filter`,
+      {
+        params: {
+          tagId
         }
       }
     );

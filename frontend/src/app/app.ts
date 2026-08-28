@@ -14,10 +14,15 @@ import {
   FormBuilder
 } from '@angular/forms';
 
-import { ContactService } from './services/contact.service';
+import { ContactService }
+  from './services/contact.service';
+
+import { TagService }
+  from './services/tag.service';
 
 import {
   Contact,
+  Tag,
   CreateContactRequest,
   UpdateContactRequest
 } from './models/contact';
@@ -47,70 +52,93 @@ type EmailFormGroup = FormGroup<{
 })
 export class App implements OnInit {
 
-  private contactService = inject(ContactService);
-  private formBuilder = inject(FormBuilder);
+  private contactService =
+    inject(ContactService);
 
-  contacts = signal<Contact[]>([]);
-  searchText = signal('');
+  private tagService =
+    inject(TagService);
+
+  private formBuilder =
+    inject(FormBuilder);
+
+  contacts =
+    signal<Contact[]>([]);
+
+  tags =
+    signal<Tag[]>([]);
+
+  searchText =
+    signal('');
+
+  selectedTagId =
+    signal<number | null>(null);
 
   showAddForm = false;
 
-  editingContactId: number | null = null;
+  editingContactId:
+    number | null = null;
 
-  editingTagIds: number[] = [];
+  editingTagIds:
+    number[] = [];
 
-  contactForm = this.formBuilder.nonNullable.group({
+  contactForm =
+    this.formBuilder.nonNullable.group({
 
-    firstName: [
-      '',
-      [
-        Validators.required,
+      firstName: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(100)
+        ]
+      ],
+
+      lastName: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(100)
+        ]
+      ],
+
+      street: [
+        '',
+        Validators.maxLength(200)
+      ],
+
+      city: [
+        '',
         Validators.maxLength(100)
-      ]
-    ],
+      ],
 
-    lastName: [
-      '',
-      [
-        Validators.required,
+      postalCode: [
+        '',
+        Validators.maxLength(20)
+      ],
+
+      country: [
+        '',
         Validators.maxLength(100)
-      ]
-    ],
+      ],
 
-    street: [
-      '',
-      Validators.maxLength(200)
-    ],
+      note: [
+        '',
+        Validators.maxLength(1000)
+      ],
 
-    city: [
-      '',
-      Validators.maxLength(100)
-    ],
+      phoneNumbers:
+        this.formBuilder
+          .array<PhoneFormGroup>([]),
 
-    postalCode: [
-      '',
-      Validators.maxLength(20)
-    ],
-
-    country: [
-      '',
-      Validators.maxLength(100)
-    ],
-
-    note: [
-      '',
-      Validators.maxLength(1000)
-    ],
-
-    phoneNumbers:
-      this.formBuilder.array<PhoneFormGroup>([]),
-
-    emailAddresses:
-      this.formBuilder.array<EmailFormGroup>([])
-  });
+      emailAddresses:
+        this.formBuilder
+          .array<EmailFormGroup>([])
+    });
 
   ngOnInit(): void {
+
     this.loadContacts();
+
+    this.loadTags();
   }
 
   loadContacts(): void {
@@ -120,11 +148,6 @@ export class App implements OnInit {
       .subscribe({
 
         next: (data) => {
-
-          console.log(
-            'Contacts received:',
-            data
-          );
 
           this.contacts.set(data);
         },
@@ -139,23 +162,158 @@ export class App implements OnInit {
       });
   }
 
-  get phoneNumbers(): FormArray<PhoneFormGroup> {
-    return this.contactForm.controls.phoneNumbers;
+  loadTags(): void {
+
+    this.tagService
+      .getTags()
+      .subscribe({
+
+        next: (data) => {
+
+          this.tags.set(data);
+        },
+
+        error: (error) => {
+
+          console.error(
+            'Error loading tags:',
+            error
+          );
+        }
+      });
   }
 
+  onSearchInput(
+    event: Event
+  ): void {
 
-  get emailAddresses(): FormArray<EmailFormGroup> {
-    return this.contactForm.controls.emailAddresses;
+    const input =
+      event.target as HTMLInputElement;
+
+    this.searchText.set(
+      input.value
+    );
+  }
+
+  searchContacts(): void {
+
+    const search =
+      this.searchText().trim();
+
+
+    if (!search) {
+
+      this.loadContacts();
+
+      return;
+    }
+
+
+    this.contactService
+      .searchContacts(search)
+      .subscribe({
+
+        next: (data) => {
+
+          this.contacts.set(data);
+        },
+
+        error: (error) => {
+
+          console.error(
+            'Error searching contacts:',
+            error
+          );
+        }
+      });
+  }
+
+  onTagFilterChange(
+    event: Event
+  ): void {
+
+    const select =
+      event.target as HTMLSelectElement;
+
+
+    if (!select.value) {
+
+      this.selectedTagId.set(null);
+
+      this.loadContacts();
+
+      return;
+    }
+
+
+    const tagId =
+      Number(select.value);
+
+
+    this.selectedTagId.set(
+      tagId
+    );
+
+
+    this.filterByTag(
+      tagId
+    );
+  }
+
+  filterByTag(
+    tagId: number
+  ): void {
+
+    this.contactService
+      .filterContacts(tagId)
+      .subscribe({
+
+        next: (data) => {
+
+          this.contacts.set(data);
+        },
+
+        error: (error) => {
+
+          console.error(
+            'Error filtering contacts:',
+            error
+          );
+        }
+      });
+  }
+
+  clearFilter(): void {
+
+    this.selectedTagId.set(null);
+
+    this.loadContacts();
+  }
+
+  get phoneNumbers():
+    FormArray<PhoneFormGroup> {
+
+    return this.contactForm
+      .controls.phoneNumbers;
+  }
+
+  get emailAddresses():
+    FormArray<EmailFormGroup> {
+
+    return this.contactForm
+      .controls.emailAddresses;
   }
 
   openAddForm(): void {
 
     this.editingContactId = null;
+
     this.editingTagIds = [];
 
     this.contactForm.reset();
 
     this.phoneNumbers.clear();
+
     this.emailAddresses.clear();
 
     this.showAddForm = true;
@@ -166,74 +324,94 @@ export class App implements OnInit {
     this.showAddForm = false;
 
     this.editingContactId = null;
+
     this.editingTagIds = [];
 
     this.contactForm.reset();
 
     this.phoneNumbers.clear();
+
     this.emailAddresses.clear();
   }
 
   addPhoneNumber(): void {
 
     const phone =
-      this.formBuilder.nonNullable.group({
+      this.formBuilder
+        .nonNullable
+        .group({
 
-        type: [
-          '',
-          Validators.required
-        ],
+          type: [
+            '',
+            Validators.required
+          ],
 
-        value: [
-          '',
-          [
-            Validators.required,
+          value: [
+            '',
+            [
+              Validators.required,
 
-            Validators.pattern(
-              /^[0-9+\s()-]{6,20}$/
-            )
+              Validators.pattern(
+                /^[0-9+\s()-]{6,20}$/
+              )
+            ]
           ]
-        ]
-      });
+        });
 
-    this.phoneNumbers.push(phone);
+
+    this.phoneNumbers.push(
+      phone
+    );
   }
 
-  removePhoneNumber(index: number): void {
+  removePhoneNumber(
+    index: number
+  ): void {
 
-    this.phoneNumbers.removeAt(index);
+    this.phoneNumbers
+      .removeAt(index);
   }
 
   addEmailAddress(): void {
 
     const email =
-      this.formBuilder.nonNullable.group({
+      this.formBuilder
+        .nonNullable
+        .group({
 
-        type: [
-          '',
-          Validators.required
-        ],
+          type: [
+            '',
+            Validators.required
+          ],
 
-        value: [
-          '',
-          [
-            Validators.required,
-            Validators.email
+          value: [
+            '',
+            [
+              Validators.required,
+              Validators.email
+            ]
           ]
-        ]
-      });
+        });
 
-    this.emailAddresses.push(email);
+
+    this.emailAddresses.push(
+      email
+    );
   }
 
-  removeEmailAddress(index: number): void {
+  removeEmailAddress(
+    index: number
+  ): void {
 
-    this.emailAddresses.removeAt(index);
+    this.emailAddresses
+      .removeAt(index);
   }
 
   saveContact(): void {
 
-    if (this.editingContactId === null) {
+    if (
+      this.editingContactId === null
+    ) {
 
       this.addContact();
 
@@ -245,19 +423,24 @@ export class App implements OnInit {
 
   addContact(): void {
 
-    if (this.contactForm.invalid) {
+    if (
+      this.contactForm.invalid
+    ) {
 
-      this.contactForm.markAllAsTouched();
+      this.contactForm
+        .markAllAsTouched();
 
       return;
     }
 
 
     const formValue =
-      this.contactForm.getRawValue();
+      this.contactForm
+        .getRawValue();
 
 
-    const newContact: CreateContactRequest = {
+    const newContact:
+      CreateContactRequest = {
 
       firstName:
         formValue.firstName,
@@ -282,21 +465,27 @@ export class App implements OnInit {
 
 
       phoneNumbers:
-        formValue.phoneNumbers.map(phone => ({
+        formValue.phoneNumbers
+          .map(phone => ({
 
-          type: phone.type,
+            type:
+              phone.type,
 
-          value: phone.value
-        })),
+            value:
+              phone.value
+          })),
 
 
       emailAddresses:
-        formValue.emailAddresses.map(email => ({
+        formValue.emailAddresses
+          .map(email => ({
 
-          type: email.type,
+            type:
+              email.type,
 
-          value: email.value
-        })),
+            value:
+              email.value
+          })),
 
 
       tagIds: []
@@ -308,12 +497,6 @@ export class App implements OnInit {
       .subscribe({
 
         next: (addedContact) => {
-
-          console.log(
-            'Contact added successfully:',
-            addedContact
-          );
-
 
           this.contacts.update(
             contacts => [
@@ -335,106 +518,115 @@ export class App implements OnInit {
           );
 
           console.error(
-            'Backend validation errors:',
             error.error?.errors
           );
         }
       });
   }
 
-  editContact(contact: Contact): void {
+  editContact(
+    contact: Contact
+  ): void {
 
     this.editingContactId =
       contact.id;
 
 
     this.editingTagIds =
-      contact.tags.map(
-        tag => tag.id
-      );
+      contact.tags
+        .map(tag => tag.id);
 
 
     this.contactForm.reset();
 
     this.phoneNumbers.clear();
+
     this.emailAddresses.clear();
 
-    this.contactForm.patchValue({
 
-      firstName:
-        contact.firstName,
+    this.contactForm
+      .patchValue({
 
-      lastName:
-        contact.lastName,
+        firstName:
+          contact.firstName,
 
-      street:
-        contact.street,
+        lastName:
+          contact.lastName,
 
-      city:
-        contact.city,
+        street:
+          contact.street,
 
-      postalCode:
-        contact.postalCode,
+        city:
+          contact.city,
 
-      country:
-        contact.country,
+        postalCode:
+          contact.postalCode,
 
-      note:
-        contact.note
-    });
+        country:
+          contact.country,
 
-    contact.phoneNumbers.forEach(phone => {
-
-      const phoneGroup =
-        this.formBuilder.nonNullable.group({
-
-          type: [
-            phone.type,
-            Validators.required
-          ],
-
-          value: [
-            phone.value,
-            [
-              Validators.required,
-
-              Validators.pattern(
-                /^[0-9+\s()-]{6,20}$/
-              )
-            ]
-          ]
-        });
+        note:
+          contact.note
+      });
 
 
-      this.phoneNumbers.push(
-        phoneGroup
-      );
-    });
+    contact.phoneNumbers
+      .forEach(phone => {
 
-    contact.emailAddresses.forEach(email => {
+        const phoneGroup =
+          this.formBuilder
+            .nonNullable
+            .group({
 
-      const emailGroup =
-        this.formBuilder.nonNullable.group({
+              type: [
+                phone.type,
+                Validators.required
+              ],
 
-          type: [
-            email.type,
-            Validators.required
-          ],
+              value: [
+                phone.value,
+                [
+                  Validators.required,
 
-          value: [
-            email.value,
-            [
-              Validators.required,
-              Validators.email
-            ]
-          ]
-        });
+                  Validators.pattern(
+                    /^[0-9+\s()-]{6,20}$/
+                  )
+                ]
+              ]
+            });
 
 
-      this.emailAddresses.push(
-        emailGroup
-      );
-    });
+        this.phoneNumbers
+          .push(phoneGroup);
+      });
+
+
+    contact.emailAddresses
+      .forEach(email => {
+
+        const emailGroup =
+          this.formBuilder
+            .nonNullable
+            .group({
+
+              type: [
+                email.type,
+                Validators.required
+              ],
+
+              value: [
+                email.value,
+                [
+                  Validators.required,
+                  Validators.email
+                ]
+              ]
+            });
+
+
+        this.emailAddresses
+          .push(emailGroup);
+      });
 
 
     this.showAddForm = true;
@@ -447,14 +639,16 @@ export class App implements OnInit {
       this.editingContactId === null
     ) {
 
-      this.contactForm.markAllAsTouched();
+      this.contactForm
+        .markAllAsTouched();
 
       return;
     }
 
 
     const formValue =
-      this.contactForm.getRawValue();
+      this.contactForm
+        .getRawValue();
 
 
     const updatedContact:
@@ -483,21 +677,27 @@ export class App implements OnInit {
 
 
       phoneNumbers:
-        formValue.phoneNumbers.map(phone => ({
+        formValue.phoneNumbers
+          .map(phone => ({
 
-          type: phone.type,
+            type:
+              phone.type,
 
-          value: phone.value
-        })),
+            value:
+              phone.value
+          })),
 
 
       emailAddresses:
-        formValue.emailAddresses.map(email => ({
+        formValue.emailAddresses
+          .map(email => ({
 
-          type: email.type,
+            type:
+              email.type,
 
-          value: email.value
-        })),
+            value:
+              email.value
+          })),
 
 
       tagIds:
@@ -514,17 +714,12 @@ export class App implements OnInit {
 
         next: (updated) => {
 
-          console.log(
-            'Contact updated successfully:',
-            updated
-          );
-
-
           this.contacts.update(
             contacts =>
               contacts.map(contact =>
 
-                contact.id === updated.id
+                contact.id ===
+                  updated.id
                   ? updated
                   : contact
               )
@@ -541,27 +736,19 @@ export class App implements OnInit {
             'Error updating contact:',
             error
           );
-
-          console.error(
-            'Backend validation errors:',
-            error.error?.errors
-          );
         }
       });
   }
 
-  deleteContact(id: number): void {
+  deleteContact(
+    id: number
+  ): void {
 
     this.contactService
       .deleteContact(id)
       .subscribe({
 
         next: () => {
-
-          console.log(
-            `Contact with id ${id} deleted successfully.`
-          );
-
 
           this.contacts.update(
             contacts =>
@@ -576,46 +763,10 @@ export class App implements OnInit {
         error: (error) => {
 
           console.error(
-            `Error deleting contact with id ${id}:`,
+            'Error deleting contact:',
             error
           );
         }
       });
-    }
-    
-    searchContacts(): void {
-      
-      const search = this.searchText().trim();
-      
-      if (!search) {
-        this.loadContacts();
-        return;
-      }
-      
-      this.contactService
-      .searchContacts(search)
-      .subscribe({
-        
-        next: (data) => {
-          this.contacts.set(data);
-        },
-        
-        error: (error) => {
-          console.error(
-            'Error searching contacts:',
-            error
-          );
-        }
-      });
-    }
-
-    onSearchInput(event: Event): void {
-      
-      const input =
-      event.target as HTMLInputElement;
-      
-      this.searchText.set(input.value);
-      
-      
-    }
   }
+}
