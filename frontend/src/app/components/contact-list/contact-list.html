@@ -1,0 +1,320 @@
+<div class="container">
+
+  <div class="header">
+
+    <div>
+
+      <h1>
+        Contacts
+      </h1>
+
+      <p class="count">
+        Total contacts:
+        {{ contacts().length }}
+      </p>
+
+    </div>
+
+
+    <button
+      class="primary-button"
+      type="button"
+      (click)="openAddForm()">
+
+      Add Contact
+
+    </button>
+
+  </div>
+
+
+  <!-- SEARCH + FILTER -->
+
+  <div class="toolbar">
+
+
+    <div class="search-bar">
+
+      <input
+        type="text"
+        placeholder="Search contacts..."
+        [value]="searchText()"
+        (input)="onSearchInput($event)">
+
+
+      <button
+        type="button"
+        (click)="searchContacts()">
+
+        Search
+
+      </button>
+
+    </div>
+
+
+    <div class="filter-bar">
+
+      <label>
+        Filter by tag:
+      </label>
+
+
+      <select
+        [value]="selectedTagId() ?? ''"
+        (change)="onTagFilterChange($event)">
+
+
+        <option value="">
+          All tags
+        </option>
+
+
+        @for (
+          tag of tags();
+          track tag.id
+        ) {
+
+          <option
+            [value]="tag.id">
+
+            {{ tag.name }}
+
+          </option>
+
+        }
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+  <!-- CONTACTS -->
+
+  @if (contacts().length === 0) {
+
+    <div class="empty-state">
+
+      No contacts found.
+
+    </div>
+
+  } @else {
+
+    <div class="contact-grid">
+
+
+      @for (
+        contact of contacts();
+        track contact.id
+      ) {
+
+        <div class="contact-card">
+
+
+          <h2>
+            {{ contact.firstName }}
+            {{ contact.lastName }}
+          </h2>
+
+
+          @if (contact.street) {
+
+            <p>
+              <strong>Address:</strong>
+              {{ contact.street }}
+            </p>
+
+          }
+
+
+          @if (contact.city) {
+
+            <p>
+              <strong>City:</strong>
+              {{ contact.city }}
+            </p>
+
+          }
+
+
+          @if (contact.postalCode) {
+
+            <p>
+              <strong>Postal code:</strong>
+              {{ contact.postalCode }}
+            </p>
+
+          }
+
+
+          @if (contact.country) {
+
+            <p>
+              <strong>Country:</strong>
+              {{ contact.country }}
+            </p>
+
+          }
+
+
+          @if (contact.note) {
+
+            <p>
+              <strong>Note:</strong>
+              {{ contact.note }}
+            </p>
+
+          }
+
+
+          @if (
+            contact.phoneNumbers.length > 0
+          ) {
+
+            <div class="contact-section">
+
+              <h3>
+                Phone numbers
+              </h3>
+
+
+              @for (
+                phone of contact.phoneNumbers;
+                track $index
+              ) {
+
+                <p>
+
+                  <strong>
+                    {{ phone.type }}:
+                  </strong>
+
+                  {{ phone.value }}
+
+                </p>
+
+              }
+
+            </div>
+
+          }
+
+
+          @if (
+            contact.emailAddresses.length > 0
+          ) {
+
+            <div class="contact-section">
+
+              <h3>
+                Email addresses
+              </h3>
+
+
+              @for (
+                email of contact.emailAddresses;
+                track $index
+              ) {
+
+                <p>
+
+                  <strong>
+                    {{ email.type }}:
+                  </strong>
+
+                  {{ email.value }}
+
+                </p>
+
+              }
+
+            </div>
+
+          }
+
+
+          @if (
+            contact.tags.length > 0
+          ) {
+
+            <div class="contact-section">
+
+              <h3>
+                Tags
+              </h3>
+
+
+              <div class="tags">
+
+                @for (
+                  tag of contact.tags;
+                  track tag.id
+                ) {
+
+                  <span class="tag">
+
+                    {{ tag.name }}
+
+                  </span>
+
+                }
+
+              </div>
+
+            </div>
+
+          }
+
+
+          <div class="card-actions">
+
+            <button
+              class="edit-button"
+              type="button"
+              (click)="openEditForm(contact)">
+
+              Edit
+
+            </button>
+
+
+            <button
+              class="delete-button"
+              type="button"
+              (click)="deleteContact(contact.id)">
+
+              Delete
+
+            </button>
+
+          </div>
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+
+  <!-- CONTACT FORM -->
+
+  @if (showForm()) {
+
+    <app-contact-form
+
+      [contact]="selectedContact()"
+
+      (saved)="onContactSaved($event)"
+
+      (cancelled)="closeForm()">
+
+    </app-contact-form>
+
+  }
+
+</div>

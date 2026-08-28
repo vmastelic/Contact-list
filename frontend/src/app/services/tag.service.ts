@@ -12,10 +12,13 @@ export class TagService {
   private apiUrl =
     'https://localhost:7090/api/Tags';
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient
+  ) {
   }
 
   getTags(): Observable<Tag[]> {
+
     return this.http.get<Tag[]>(
       this.apiUrl
     );
