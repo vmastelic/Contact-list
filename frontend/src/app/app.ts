@@ -51,6 +51,7 @@ export class App implements OnInit {
   private formBuilder = inject(FormBuilder);
 
   contacts = signal<Contact[]>([]);
+  searchText = signal('');
 
   showAddForm = false;
 
@@ -580,5 +581,41 @@ export class App implements OnInit {
           );
         }
       });
+    }
+    
+    searchContacts(): void {
+      
+      const search = this.searchText().trim();
+      
+      if (!search) {
+        this.loadContacts();
+        return;
+      }
+      
+      this.contactService
+      .searchContacts(search)
+      .subscribe({
+        
+        next: (data) => {
+          this.contacts.set(data);
+        },
+        
+        error: (error) => {
+          console.error(
+            'Error searching contacts:',
+            error
+          );
+        }
+      });
+    }
+
+    onSearchInput(event: Event): void {
+      
+      const input =
+      event.target as HTMLInputElement;
+      
+      this.searchText.set(input.value);
+      
+      
+    }
   }
-}
