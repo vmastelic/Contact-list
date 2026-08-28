@@ -20,4 +20,8 @@ export class ContactService {
   deleteContact(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  addContact(contact: Contact): Observable<Contact> {
+    return this.http.post<Contact>(this.apiUrl, contact);
+  }
 }

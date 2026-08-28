@@ -33,6 +33,70 @@
         </button>
 
       </div>
+
     }
   </div>
+
+  <button (click)="showAddForm = true">
+    Add Contact
+  </button>
+  
+  @if (showAddForm) {
+  <div class="add-form">
+
+    <h2>Add Contact</h2>
+
+    <input
+      type="text"
+      placeholder="First name"
+      [(ngModel)]="newContact.firstName"
+      name="firstName">
+
+    <input
+      type="text"
+      placeholder="Last name"
+      [(ngModel)]="newContact.lastName"
+      name="lastName">
+
+    <input
+      type="text"
+      placeholder="Street"
+      [(ngModel)]="newContact.street"
+      name="street">
+
+    <input
+      type="text"
+      placeholder="City"
+      [(ngModel)]="newContact.city"
+      name="city">
+
+    <input
+      type="text"
+      placeholder="Postal code"
+      [(ngModel)]="newContact.postalCode"
+      name="postalCode">
+
+    <input
+      type="text"
+      placeholder="Country"
+      [(ngModel)]="newContact.country"
+      name="country">
+
+    <textarea
+      placeholder="Note"
+      [(ngModel)]="newContact.note"
+      name="note">
+    </textarea>
+
+    <button (click)="addContact()">
+      Save
+    </button>
+
+    <button (click)="showAddForm = false">
+      Cancel
+    </button>
+
+  </div>
+}
+
 </div>

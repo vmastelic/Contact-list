@@ -1,10 +1,11 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ContactService } from './services/contact.service';
 import { Contact } from './models/contact';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -36,6 +37,63 @@ export class App implements OnInit {
       },
       error: (error) => {
         console.error(`Error deleting contact with id ${id}:`, error);
+      }
+    });
+  }
+
+  showAddForm = false;
+  newContact: Contact = {
+    id: 0,
+    firstName: '',
+    lastName: '',
+    phoneNumbers: [],
+    emailAddresses: [],
+    tags: [],
+    street: '',
+    city: '',
+    postalCode: '',
+    country: '',
+    note: ''
+  };
+
+  addContact(): void {
+
+    this.contactService.addContact(this.newContact).subscribe({
+
+      next: (addedContact) => {
+
+        console.log(
+          'Contact added successfully:',
+          addedContact
+        );
+
+        this.contacts.set([
+          ...this.contacts(),
+          addedContact
+        ]);
+
+        this.showAddForm = false;
+
+        this.newContact = {
+          id: 0,
+          firstName: '',
+          lastName: '',
+          phoneNumbers: [],
+          emailAddresses: [],
+          tags: [],
+          street: '',
+          city: '',
+          postalCode: '',
+          country: '',
+          note: ''
+        };
+      },
+
+      error: (error) => {
+        console.error(
+          'Error adding contact:',
+          error
+        );
       }
     });
   }
