@@ -7,8 +7,12 @@ namespace ContactManager.Api.Services
 {
     public class TagService : ITagService
     {
-
         private readonly AppDbContext _context;
+
+        public TagService(AppDbContext context)
+        {
+            _context = context;
+        }
 
         public async Task<List<TagDto>> GetAllAsync()
         {
@@ -23,19 +27,29 @@ namespace ContactManager.Api.Services
                 .ToListAsync();
         }
 
-        public TagService(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<TagDto?> CreateAsync(CreateTagDto dto)
         {
+            var name = dto.Name.Trim();
+
+            var normalizedName = name.ToLower();
+
+            var alreadyExists = await _context.Tags
+                .AnyAsync(t =>
+                    t.Name.ToLower() == normalizedName
+                );
+
+            if (alreadyExists)
+            {
+                return null;
+            }
+
             var tag = new Tag
             {
-                Name = dto.Name,
+                Name = name
             };
 
             _context.Tags.Add(tag);
+
             await _context.SaveChangesAsync();
 
             return new TagDto
@@ -47,14 +61,19 @@ namespace ContactManager.Api.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var tag = _context.Tags.FirstOrDefault(t => t.Id == id);
-            if (tag == null) return false;
+            var tag = await _context.Tags
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (tag == null)
+            {
+                return false;
+            }
 
             _context.Tags.Remove(tag);
+
             await _context.SaveChangesAsync();
 
             return true;
         }
-
     }
 }

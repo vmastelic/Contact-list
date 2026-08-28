@@ -1,5 +1,5 @@
-﻿using ContactManager.Api.DTOs.TagDTOs;
-using ContactManager.Api.Entities;
+﻿using ContactManager.Api.DTOs;
+using ContactManager.Api.DTOs.TagDTOs;
 using ContactManager.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,17 +25,37 @@ namespace ContactManager.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateTagDto dto)
+        public async Task<IActionResult> Create(
+            CreateTagDto dto
+        )
         {
-            var tag = await _tagService.CreateAsync(dto);
-            return Ok(tag);
+            var createdTag =
+                await _tagService.CreateAsync(dto);
+
+            if (createdTag == null)
+            {
+                return Conflict(new
+                {
+                    message = "A tag with this name already exists."
+                });
+            }
+
+            return Ok(createdTag);
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(
+            int id
+        )
         {
-            var deleted = await _tagService.DeleteAsync(id);
-            if (!deleted) return NotFound(); ;
+            var deleted =
+                await _tagService.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
             return NoContent();
         }
     }
