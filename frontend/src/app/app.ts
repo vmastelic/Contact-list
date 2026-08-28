@@ -3,21 +3,18 @@ import {
 } from '@angular/core';
 
 import {
-  ContactListComponent
-} from './components/contact-list/contact-list';
-
+  RouterOutlet
+} from '@angular/router';
 
 @Component({
   selector: 'app-root',
-
   standalone: true,
 
   imports: [
-    ContactListComponent
+    RouterOutlet
   ],
 
   templateUrl: './app.html',
-
   styleUrl: './app.css'
 })
 export class App {

@@ -32,6 +32,15 @@ export class ContactService {
     );
   }
 
+  getContactById(
+    id: number
+  ): Observable<Contact> {
+
+    return this.http.get<Contact>(
+      `${this.apiUrl}/${id}`
+    );
+  }
+
   addContact(
     contact: CreateContactRequest
   ): Observable<Contact> {

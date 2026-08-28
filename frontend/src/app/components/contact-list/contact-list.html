@@ -206,7 +206,10 @@
           @if (contact.street) {
 
             <p>
-              <strong>Address:</strong>
+              <strong>
+                Address:
+              </strong>
+
               {{ contact.street }}
             </p>
 
@@ -215,7 +218,10 @@
           @if (contact.city) {
 
             <p>
-              <strong>City:</strong>
+              <strong>
+                City:
+              </strong>
+
               {{ contact.city }}
             </p>
 
@@ -224,7 +230,10 @@
           @if (contact.postalCode) {
 
             <p>
-              <strong>Postal code:</strong>
+              <strong>
+                Postal code:
+              </strong>
+
               {{ contact.postalCode }}
             </p>
 
@@ -233,7 +242,10 @@
           @if (contact.country) {
 
             <p>
-              <strong>Country:</strong>
+              <strong>
+                Country:
+              </strong>
+
               {{ contact.country }}
             </p>
 
@@ -242,11 +254,15 @@
           @if (contact.note) {
 
             <p>
-              <strong>Note:</strong>
+              <strong>
+                Note:
+              </strong>
+
               {{ contact.note }}
             </p>
 
           }
+
 
           @if (
             contact.phoneNumbers.length > 0
@@ -279,6 +295,7 @@
 
           }
 
+
           @if (
             contact.emailAddresses.length > 0
           ) {
@@ -310,6 +327,7 @@
 
           }
 
+
           @if (
             contact.tags.length > 0
           ) {
@@ -339,7 +357,19 @@
 
           }
 
+
           <div class="card-actions">
+
+            <a
+              class="view-button"
+              [routerLink]="[
+                '/contacts',
+                contact.id
+              ]">
+
+              View
+
+            </a>
 
             <button
               class="edit-button"
@@ -384,7 +414,8 @@
       </button>
 
       <span>
-        Page {{ page() }} of {{ totalPages() }}
+        Page {{ page() }}
+        of {{ totalPages() }}
       </span>
 
       <button

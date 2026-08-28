@@ -6,6 +6,10 @@ import {
 } from '@angular/core';
 
 import {
+  RouterLink
+} from '@angular/router';
+
+import {
   Contact,
   Tag
 } from '../../models/contact';
@@ -27,7 +31,8 @@ import {
   standalone: true,
 
   imports: [
-    ContactFormComponent
+    ContactFormComponent,
+    RouterLink
   ],
 
   templateUrl: './contact-list.html',
@@ -82,9 +87,7 @@ export class ContactListComponent
     signal(false);
 
   ngOnInit(): void {
-
     this.loadContacts();
-
     this.loadTags();
   }
 

@@ -1,0 +1,201 @@
+<div class="container">
+
+  <a
+    class="back-link"
+    routerLink="/contacts">
+
+    ← Back to contacts
+
+  </a>
+
+
+  @if (loading()) {
+
+    <div class="message">
+      Loading contact...
+    </div>
+
+  } @else if (notFound()) {
+
+    <div class="message">
+
+      <h2>
+        Contact not found
+      </h2>
+
+      <p>
+        The requested contact does not exist.
+      </p>
+
+    </div>
+
+  } @else if (contact(); as contact) {
+
+    <div class="contact-detail">
+
+      <h1>
+        {{ contact.firstName }}
+        {{ contact.lastName }}
+      </h1>
+
+
+      <div class="section">
+
+        <h2>
+          Contact information
+        </h2>
+
+
+        @if (contact.street) {
+
+          <p>
+            <strong>Street:</strong>
+            {{ contact.street }}
+          </p>
+
+        }
+
+
+        @if (contact.city) {
+
+          <p>
+            <strong>City:</strong>
+            {{ contact.city }}
+          </p>
+
+        }
+
+
+        @if (contact.postalCode) {
+
+          <p>
+            <strong>Postal code:</strong>
+            {{ contact.postalCode }}
+          </p>
+
+        }
+
+
+        @if (contact.country) {
+
+          <p>
+            <strong>Country:</strong>
+            {{ contact.country }}
+          </p>
+
+        }
+
+
+        @if (contact.note) {
+
+          <p>
+            <strong>Note:</strong>
+            {{ contact.note }}
+          </p>
+
+        }
+
+      </div>
+
+
+      @if (
+        contact.phoneNumbers.length > 0
+      ) {
+
+        <div class="section">
+
+          <h2>
+            Phone numbers
+          </h2>
+
+
+          @for (
+            phone of contact.phoneNumbers;
+            track $index
+          ) {
+
+            <p>
+
+              <strong>
+                {{ phone.type }}:
+              </strong>
+
+              {{ phone.value }}
+
+            </p>
+
+          }
+
+        </div>
+
+      }
+
+
+      @if (
+        contact.emailAddresses.length > 0
+      ) {
+
+        <div class="section">
+
+          <h2>
+            Email addresses
+          </h2>
+
+
+          @for (
+            email of contact.emailAddresses;
+            track $index
+          ) {
+
+            <p>
+
+              <strong>
+                {{ email.type }}:
+              </strong>
+
+              {{ email.value }}
+
+            </p>
+
+          }
+
+        </div>
+
+      }
+
+
+      @if (
+        contact.tags.length > 0
+      ) {
+
+        <div class="section">
+
+          <h2>
+            Tags
+          </h2>
+
+
+          <div class="tags">
+
+            @for (
+              tag of contact.tags;
+              track tag.id
+            ) {
+
+              <span class="tag">
+                {{ tag.name }}
+              </span>
+
+            }
+
+          </div>
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</div>
